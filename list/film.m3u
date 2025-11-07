@@ -1,12 +1,12 @@
-#EXTINF:-1 tvg-id="" tvg-name="Eden" tvg-logo="https://m.media-amazon.com/images/M/MV5BZWJlODMyNDQtZWUyNC00NTI0LThjZDQtOGM1NTlmODEwYWQ0XkEyXkFqcGc@._V1_FMjpg_UY3000_.jpg", Eden
+#EXTINF:-1 tvg-id="" tvg-name="Eden" tvg-logo="https://m.media-amazon.com/images/M/MV5BZWJlODMyNDQtZWUyNC00NTI0LThjZDQtOGM1NTlmODEwYWQ0XkEyXkFqcGc@._V1_FMjpg_UY3000_.jpg" group-title="Film",Eden
 https://vs15.photofunia.pro/v/Eden.2024.WEB-DL.1080p.DUAL.H.264-HDM/master.m3u8
-#EXTINF:-1 tvg-id="" tvg-name="June ve John" tvg-logo="https://cdn.filmmodu.vip/uploads/movie/poster/14562/thumb_june-and-john.webp", June ve John
+#EXTINF:-1 tvg-id="" tvg-name="June ve John" tvg-logo="https://cdn.filmmodu.vip/uploads/movie/poster/14562/thumb_june-and-john.webp" group-title="Film",June ve John
 https://imgsapi.pro/eDxX8vfFZ0cmxtfFgIYmfyZmd5WZnjcXGRlZQX0ZQB0dPxcdwR0fQNNNN.m3u8
-#EXTINF:-1 tvg-id="" tvg-name="Sharks of the North" tvg-logo="https://cdn.filmmodu.vip/uploads/movie/poster/14549/thumb_sharks-of-the-north.webp", Sharks of the North
+#EXTINF:-1 tvg-id="" tvg-name="Sharks of the North" tvg-logo="https://cdn.filmmodu.vip/uploads/movie/poster/14549/thumb_sharks-of-the-north.webp" group-title="Film",Sharks of the North
 https://imgsapi.pro/eDxX8uZYxyZFv0h0HiBlHmBexxkePxcZGD3Zmp3ZGncXFzdZGFjZNNN.m3u8
-#EXTINF:-1 tvg-id="" tvg-name="The Batman (2022)" tvg-logo="https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg" group-title="Film",The Batman (2022)
+#EXTINF:-1 tvg-id="" tvg-name="The Batman (2022)" tvg-logo="https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg" group-title="Film" group-title="Film",The Batman (2022)
 https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8
-#EXTINF:-1 tvg-id="" tvg-name="Dune: Çöl Gezegeni" tvg-logo="https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg" group-title="Film",Dune: Çöl Gezegeni (2021)
+#EXTINF:-1 tvg-id="" tvg-name="Dune: Çöl Gezegeni" tvg-logo="https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg" group-title="Film" group-title="Film",Dune: Çöl Gezegeni (2021)
 https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8
 #EXTINF:-1 tvg-id="" tvg-name="Spider-Man: No Way Home" tvg-logo="https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg" group-title="Film",Spider-Man: No Way Home (2021)
 https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8
