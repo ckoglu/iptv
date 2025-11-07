@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STREAMTV - Video Oynatıcı</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/player.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body class="player-mode">
+    <!-- Netflix Tarzı Minimal Kontroller -->
+    <div class="netflix-player" id="netflixPlayer">
+        <!-- Video Element -->
+        <video 
+            id="videoElement" 
+            class="netflix-video"
+            playsinline 
+            webkit-playsinline>
+        </video>
+        
+        <!-- Üst Kontroller -->
+        <div class="player-controls-top">
+            <button class="back-button" onclick="goBack()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="video-title" id="videoTitle">Yükleniyor...</div>
+        </div>
+        
+        <!-- Orta Kontroller (Oynat/Duraklat) -->
+        <div class="player-controls-center">
+            <button class="play-pause-btn" id="playPauseBtn">
+                <i class="fas fa-play"></i>
+            </button>
+        </div>
+        
+        <!-- Alt Kontroller -->
+        <div class="player-controls-bottom">
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                    <div class="progress-handle" id="progressHandle"></div>
+                </div>
+                <div class="time-display">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <button class="control-btn" id="rewindBtn">
+                    <i class="fas fa-backward"></i>
+                </button>
+                <button class="control-btn" id="forwardBtn">
+                    <i class="fas fa-forward"></i>
+                </button>
+                <button class="control-btn" id="volumeBtn">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <button class="control-btn" id="fullscreenBtn">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Yükleme Göstergesi -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Yükleniyor...</div>
+        </div>
+        
+        <!-- Hata Mesajı -->
+        <div class="error-overlay" id="errorOverlay" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="error-text" id="errorText">Video yüklenirken hata oluştu</div>
+            <button class="retry-btn" onclick="retryPlayback()">Tekrar Dene</button>
+            <button class="retry-btn" onclick="goBack()">Geri Dön</button>
+        </div>
+    </div>
+
+    <!-- Ses Kontrolü -->
+    <div class="volume-control" id="volumeControl" style="display: none;">
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="1">
+    </div>
+
+    <script src="js/player.js"></script>
+</body>
+</html>

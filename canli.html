@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canlı Yayın - STREAMTV</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <a class="logo" href="index.html">STREAMTV</a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Ana Sayfa</a></li>
+                <li><a href="film.html">Film</a></li>
+                <li><a href="dizi.html">Dizi</a></li>
+                <li><a href="belgesel.html" class="active">Belgesel</a></li>
+                <li><a href="canli.html">Canlı</a></li>
+                <li><a href="ara.html">Ara</a></li>
+            </ul>
+        </nav>
+        <div class="user-actions">
+            <div class="search-icon" onclick="goToSearch()">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="profile">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="content-grid" id="contentGrid">
+            <!-- Canlı yayınlar buraya lazy load ile yüklenecek -->
+        </div>
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+    </main>
+
+    <script src="js/m3u-loader.js"></script>
+    <script src="js/navigation.js"></script>
+    <script>
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        const m3uUrl = 'https://raw.githubusercontent.com/ckoglu/iptv/refs/heads/main/list/canli.m3u';
+        initM3ULoader(m3uUrl, 'contentGrid', 'canli');
+
+        function goToSearch() {
+            window.location.href = 'ara.html';
+        }
+    </script>
+</body>
+</html>

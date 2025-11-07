@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ara - STREAMTV</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <a class="logo" href="index.html">STREAMTV</a>
+        <nav>
+            <ul>
+                <li><a href="index.html">Ana Sayfa</a></li>
+                <li><a href="film.html">Film</a></li>
+                <li><a href="dizi.html">Dizi</a></li>
+                <li><a href="belgesel.html" class="active">Belgesel</a></li>
+                <li><a href="canli.html">Canlı</a></li>
+                <li><a href="ara.html">Ara</a></li>
+            </ul>
+        </nav>
+        <div class="user-actions">
+            <div class="search-icon" onclick="focusSearch()">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="profile">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section with Search -->
+    <section class="hero search-hero">
+        <div class="hero-backdrop"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Aradığını Bul</h1>
+            <p class="hero-description">Binlerce film, dizi ve canlı TV kanalı arasında arama yap</p>
+            
+            <!-- Arama Kutusu -->
+            <div class="search-hero-box">
+                <div class="search-input-container">
+                    <i class="fas fa-search search-icon-hero"></i>
+                    <input type="text" id="searchInput" class="search-input-hero" placeholder="Film, dizi veya kanal ara...">
+                    <button id="searchBtn" class="search-button-hero">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Welcome Mesajı ve İstatistikler -->
+            <div class="welcome-stats" id="welcomeStats">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fas fa-film"></i>
+                        <div class="stat-number" id="filmCount">0</div>
+                        <div class="stat-label">Film</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-tv"></i>
+                        <div class="stat-number" id="diziCount">0</div>
+                        <div class="stat-label">Dizi</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-broadcast-tower"></i>
+                        <div class="stat-number" id="canliCount">0</div>
+                        <div class="stat-label">Canlı TV</div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fas fa-play-circle"></i>
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">Toplam</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Arama Sonuçları -->
+    <div class="search-results-container" id="searchResultsContainer">
+        <div class="search-results" id="searchResults">
+            <!-- Arama sonuçları burada gösterilecek -->
+        </div>
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <div>Aranıyor...</div>
+        </div>
+    </div>
+
+    <script src="js/search.js"></script>
+    <script src="js/navigation.js"></script>
+    <script>
+        // Header scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        function focusSearch() {
+            document.getElementById('searchInput').focus();
+        }
+
+        // Sayfa yüklendiğinde search input'a focus
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.getElementById('searchInput').focus();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
