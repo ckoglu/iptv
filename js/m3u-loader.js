@@ -1,4 +1,19 @@
 // js/m3u-loader.js - Tamamen Yenilenmiş
+function loadAllContent() {
+    // Tüm kategorileri yükle
+    const loaders = [
+        initM3ULoader('https://raw.githubusercontent.com/ckoglu/iptv/refs/heads/main/list/film.m3u', 'popular-movies', 'film'),
+        initM3ULoader('https://raw.githubusercontent.com/ckoglu/iptv/refs/heads/main/list/dizi.m3u', 'popular-series', 'dizi'),
+        initM3ULoader('https://raw.githubusercontent.com/ckoglu/iptv/refs/heads/main/list/belgesel.m3u', 'documentary-channels', 'belgesel'),
+        initM3ULoader('https://raw.githubusercontent.com/ckoglu/iptv/refs/heads/main/list/canli.m3u', 'live-channels', 'canli')
+    ];
+
+    // Tüm loader'lar tamamlandığında
+    Promise.all(loaders).then(() => {
+        setupScrollButtons();
+    });
+}
+
 class M3ULoader {
     constructor(m3uUrl, containerId, contentType) {
         this.m3uUrl = m3uUrl;
@@ -7,11 +22,10 @@ class M3ULoader {
         this.contentType = contentType;
         this.items = [];
         this.currentIndex = 0;
-        this.batchSize = 20;
+        this.batchSize = 30;
         this.isLoading = false;
         this.hasMoreItems = true;
         this.observer = null;
-        
         console.log(`M3ULoader initialized for ${contentType} with URL: ${m3uUrl}`);
         this.init();
     }
@@ -25,8 +39,6 @@ class M3ULoader {
                 this.showError('Bu kategoride henüz içerik bulunamadı.');
                 return;
             }
-            
-            console.log(`✅ ${this.contentType}: ${this.items.length} içerik yüklendi`);
             
             // İlk batch'i render et
             this.renderBatch();
@@ -43,7 +55,6 @@ class M3ULoader {
     }
 
     async loadM3UFile() {
-        console.log(`📥 Loading M3U: ${this.m3uUrl}`);
         const response = await fetch(this.m3uUrl);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -69,8 +80,6 @@ class M3ULoader {
                 }
             }
         }
-        
-        console.log(`📊 ${this.contentType}: ${this.items.length} item parsed`);
     }
 
     parseEXTINF(extinfLine, url) {
@@ -171,6 +180,7 @@ class M3ULoader {
         div.setAttribute('data-title', item.title);
         div.setAttribute('data-type', this.contentType);
         div.setAttribute('tabindex', '0');
+        div.setAttribute('data-poster', item.tvg.logo || this.getManualLogo(item.title) || '');
         
         // TVG-LOGO kontrolü - CANLI TV için özel fallback
         let backgroundStyle;
@@ -214,8 +224,7 @@ class M3ULoader {
     }
 
     setupInfiniteScroll() {
-        console.log(`🔄 ${this.contentType}: Infinite scroll aktif`);
-        
+      
         // Intersection Observer ile modern lazy loading
         this.observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -335,11 +344,29 @@ class M3ULoader {
             alert('Bu içeriğin oynatma bağlantısı bulunamadı.');
             return;
         }
-        
+
         try {
             const realUrl = this.convertTestUrl(item.url);
-            console.log(`🎬 Playing: ${item.title}`);
-            window.location.href = `player.html?url=${encodeURIComponent(realUrl)}&title=${encodeURIComponent(item.title)}`;
+            const poster = item.tvg.logo || this.getManualLogo(item.title) || '';
+            const title = item.title || 'Bilinmeyen Başlık';
+
+            const videoData = {
+                title,
+                url: realUrl,
+                date: new Date().toISOString(),
+                poster: poster || 'img/default-thumb.jpg',
+                meta: this.contentType
+            };
+
+            let watched = JSON.parse(localStorage.getItem('recentlyWatched') || '[]');
+            watched = watched.filter(v => v.url !== videoData.url);
+            watched.unshift(videoData);
+            if (watched.length > 20) watched = watched.slice(0, 20);
+            localStorage.setItem('recentlyWatched', JSON.stringify(watched));
+
+            const playerUrl = `player.html?url=${encodeURIComponent(realUrl)}&title=${encodeURIComponent(title)}&poster=${encodeURIComponent(poster)}`;
+            window.location.href = playerUrl;
+
         } catch (error) {
             console.error('URL Error:', error);
             alert('Geçersiz video bağlantısı: ' + item.url);
