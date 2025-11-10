@@ -298,13 +298,27 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 }
 
 /* TV mode specific */
-.tv-mode *:focus { outline: 3px solid var(--primary); outline-offset: 4px; box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
-.tv-mode { cursor: none; } /* default, JS show/hide will toggle during interaction */
-.tv-mode .content-item { transition: transform .18s ease, box-shadow .18s ease; }
-.tv-mode .content-item:focus { transform: translateY(-8px) scale(1.03); z-index: 999; border-color: var(--primary); }
-.tv-mode .scroll-btn { outline: none; }
-.tv-mode .search-input:focus { background-color: var(--bg-light-hover); color: var(--text-main); }
-.tv-mode .quick-link-card:focus { transform: translateY(-6px); box-shadow: 0 8px 30px rgba(0,0,0,0.6); border-color: var(--primary); }
+body.tv-mode {
+  cursor: none !important;
+  overflow: hidden;
+}
+
+body.tv-mode * {
+  pointer-events: none;
+}
+
+body.tv-mode .nav-btn,
+body.tv-mode .quick-btn,
+body.tv-mode .content-item,
+body.tv-mode button,
+body.tv-mode input {
+  pointer-events: auto;
+}
+
+body.tv-mode :focus-visible {
+  outline: 3px solid #00bfff;
+  transform: scale(1.05);
+  transition: transform 0.1s ease;
 }
 
 .flex {display: flex;}
