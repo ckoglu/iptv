@@ -1,4 +1,4 @@
-// js/navigation.js - TV Optimizasyonlu
+// js/navigation.js - Tam TV Uyumlu
 class TVNavigation {
     constructor() {
         this.focusableElements = [];
@@ -8,10 +8,11 @@ class TVNavigation {
     }
 
     detectTV() {
-        // TV veya büyük ekran cihaz kontrolü
+        // TV, büyük ekran veya uzaktan kumanda tespiti
         return window.matchMedia('(min-width: 1280px) and (min-height: 720px)').matches ||
                navigator.userAgent.includes('TV') ||
-               navigator.userAgent.includes('SmartTV');
+               navigator.userAgent.includes('SmartTV') ||
+               navigator.userAgent.includes('Large Screen');
     }
 
     init() {
@@ -19,9 +20,9 @@ class TVNavigation {
             this.setupTVMode();
             this.setupKeyboardNavigation();
             this.setupFocusableElements();
-            this.setupScrollButtons();
+            this.setupEventListeners();
             
-            // İlk elementi focusla
+            // 1 saniye sonra ilk elementi focusla
             setTimeout(() => this.focusFirstElement(), 1000);
         });
     }
@@ -29,20 +30,16 @@ class TVNavigation {
     setupTVMode() {
         if (this.isTVMode) {
             document.body.classList.add('tv-mode');
-            // Fareyi gizle
-            document.body.style.cursor = 'none';
-            
-            // Fare hareketinde imleci gizle
-            document.addEventListener('mousemove', this.hideCursor.bind(this));
+            console.log('📺 TV Modu Aktif - Kumanda navigasyonu hazır');
         }
-    }
-
-    hideCursor() {
-        document.body.style.cursor = 'none';
     }
 
     setupKeyboardNavigation() {
         document.addEventListener('keydown', (e) => {
+            if (this.isTVMode) {
+                e.preventDefault();
+            }
+            
             switch(e.key) {
                 case 'ArrowUp':
                     e.preventDefault();
@@ -69,41 +66,74 @@ class TVNavigation {
                     e.preventDefault();
                     this.handleBack();
                     break;
+                case ' ':
+                    e.preventDefault();
+                    this.activateFocusedElement();
+                    break;
             }
         });
     }
 
     setupFocusableElements() {
+        // Tüm tıklanabilir ve focuslanabilir elementleri seç
         this.focusableElements = Array.from(document.querySelectorAll(
-            '.nav-btn, .quick-link-card, .content-item, .search-btn, .back-btn, .scroll-btn, .scroll-btn-all'
-        ));
-        
+            'a, button, .quick-link-card, .content-item, .scroll-btn, .scroll-btn-all, ' +
+            '.search-icon, .profile, .mobile-menu-toggle, .mobile-menu-close, ' +
+            'nav ul li a, .filter-btn, [tabindex]:not([tabindex="-1"])'
+        )).filter(el => {
+            // Görünür ve etkin elementleri filtrele
+            return el.offsetWidth > 0 && 
+                   el.offsetHeight > 0 && 
+                   !el.disabled &&
+                   window.getComputedStyle(el).visibility !== 'hidden';
+        });
+
+        console.log(`🎯 ${this.focusableElements.length} focusable element bulundu`);
+
         // Tabindex'leri ayarla
         this.focusableElements.forEach((el, index) => {
             el.setAttribute('tabindex', index === 0 ? '0' : '-1');
-            el.addEventListener('click', this.handleElementClick.bind(this));
+            el.classList.add('focusable-element');
         });
     }
 
+    setupEventListeners() {
+        // Click event'lerini dinle
+        document.addEventListener('click', (e) => {
+            const target = e.target.closest('.focusable-element');
+            if (target) {
+                this.handleElementClick(target);
+            }
+        });
+
+        // Scroll butonlarını kur
+        this.setupScrollButtons();
+    }
+
     navigate(direction) {
+        if (this.focusableElements.length === 0) return;
+
         const oldIndex = this.currentFocusIndex;
-        
+        let newIndex;
+
         switch(direction) {
             case 'up':
-                this.currentFocusIndex = this.findElementAbove(oldIndex);
+                newIndex = this.findElementAbove(oldIndex);
                 break;
             case 'down':
-                this.currentFocusIndex = this.findElementBelow(oldIndex);
+                newIndex = this.findElementBelow(oldIndex);
                 break;
             case 'left':
-                this.currentFocusIndex = oldIndex > 0 ? oldIndex - 1 : this.focusableElements.length - 1;
+                newIndex = this.findElementLeft(oldIndex);
                 break;
             case 'right':
-                this.currentFocusIndex = oldIndex < this.focusableElements.length - 1 ? oldIndex + 1 : 0;
+                newIndex = this.findElementRight(oldIndex);
                 break;
         }
 
-        this.updateFocus(oldIndex, this.currentFocusIndex);
+        if (newIndex !== -1 && newIndex !== oldIndex) {
+            this.updateFocus(oldIndex, newIndex);
+        }
     }
 
     findElementAbove(currentIndex) {
@@ -112,17 +142,23 @@ class TVNavigation {
         
         let bestCandidate = -1;
         let bestDistance = Infinity;
+        let bestVerticalDistance = Infinity;
         
         this.focusableElements.forEach((el, index) => {
             if (index === currentIndex) return;
             
             const rect = el.getBoundingClientRect();
-            // Yukarıdaki elementleri bul
-            if (rect.bottom <= currentRect.top) {
-                const distance = Math.abs(rect.left - currentRect.left);
-                if (distance < bestDistance) {
-                    bestDistance = distance;
+            const verticalDistance = currentRect.top - rect.bottom;
+            
+            // Yukarıdaki elementleri bul (minimum 10px üstte)
+            if (verticalDistance > 10) {
+                const horizontalDistance = Math.abs(rect.left - currentRect.left);
+                const totalDistance = verticalDistance + horizontalDistance * 0.3;
+                
+                if (totalDistance < bestDistance) {
+                    bestDistance = totalDistance;
                     bestCandidate = index;
+                    bestVerticalDistance = verticalDistance;
                 }
             }
         });
@@ -136,17 +172,23 @@ class TVNavigation {
         
         let bestCandidate = -1;
         let bestDistance = Infinity;
+        let bestVerticalDistance = Infinity;
         
         this.focusableElements.forEach((el, index) => {
             if (index === currentIndex) return;
             
             const rect = el.getBoundingClientRect();
-            // Aşağıdaki elementleri bul
-            if (rect.top >= currentRect.bottom) {
-                const distance = Math.abs(rect.left - currentRect.left);
-                if (distance < bestDistance) {
-                    bestDistance = distance;
+            const verticalDistance = rect.top - currentRect.bottom;
+            
+            // Aşağıdaki elementleri bul (minimum 10px aşağıda)
+            if (verticalDistance > 10) {
+                const horizontalDistance = Math.abs(rect.left - currentRect.left);
+                const totalDistance = verticalDistance + horizontalDistance * 0.3;
+                
+                if (totalDistance < bestDistance) {
+                    bestDistance = totalDistance;
                     bestCandidate = index;
+                    bestVerticalDistance = verticalDistance;
                 }
             }
         });
@@ -154,48 +196,143 @@ class TVNavigation {
         return bestCandidate !== -1 ? bestCandidate : currentIndex;
     }
 
+    findElementLeft(currentIndex) {
+        const currentEl = this.focusableElements[currentIndex];
+        const currentRect = currentEl.getBoundingClientRect();
+        
+        let bestCandidate = -1;
+        let bestDistance = Infinity;
+        
+        this.focusableElements.forEach((el, index) => {
+            if (index === currentIndex) return;
+            
+            const rect = el.getBoundingClientRect();
+            const horizontalDistance = currentRect.left - rect.right;
+            
+            // Soldaki elementleri bul (minimum 10px solda)
+            if (horizontalDistance > 10) {
+                const verticalDistance = Math.abs(rect.top - currentRect.top);
+                const totalDistance = horizontalDistance + verticalDistance * 0.3;
+                
+                if (totalDistance < bestDistance) {
+                    bestDistance = totalDistance;
+                    bestCandidate = index;
+                }
+            }
+        });
+        
+        return bestCandidate !== -1 ? bestCandidate : 
+               (currentIndex > 0 ? currentIndex - 1 : this.focusableElements.length - 1);
+    }
+
+    findElementRight(currentIndex) {
+        const currentEl = this.focusableElements[currentIndex];
+        const currentRect = currentEl.getBoundingClientRect();
+        
+        let bestCandidate = -1;
+        let bestDistance = Infinity;
+        
+        this.focusableElements.forEach((el, index) => {
+            if (index === currentIndex) return;
+            
+            const rect = el.getBoundingClientRect();
+            const horizontalDistance = rect.left - currentRect.right;
+            
+            // Sağdaki elementleri bul (minimum 10px sağda)
+            if (horizontalDistance > 10) {
+                const verticalDistance = Math.abs(rect.top - currentRect.top);
+                const totalDistance = horizontalDistance + verticalDistance * 0.3;
+                
+                if (totalDistance < bestDistance) {
+                    bestDistance = totalDistance;
+                    bestCandidate = index;
+                }
+            }
+        });
+        
+        return bestCandidate !== -1 ? bestCandidate : 
+               (currentIndex < this.focusableElements.length - 1 ? currentIndex + 1 : 0);
+    }
+
     updateFocus(oldIndex, newIndex) {
         // Eski elementi blurla
         if (oldIndex >= 0 && this.focusableElements[oldIndex]) {
             this.focusableElements[oldIndex].setAttribute('tabindex', '-1');
+            this.focusableElements[oldIndex].classList.remove('focused');
             this.focusableElements[oldIndex].blur();
         }
         
         // Yeni elementi focusla
         if (newIndex >= 0 && this.focusableElements[newIndex]) {
             this.focusableElements[newIndex].setAttribute('tabindex', '0');
+            this.focusableElements[newIndex].classList.add('focused');
             this.focusableElements[newIndex].focus();
             
-            // Görünür alana getir
-            this.focusableElements[newIndex].scrollIntoView({
+            // Görünür alana getir (smooth scroll)
+            this.scrollToElement(this.focusableElements[newIndex]);
+        }
+        
+        this.currentFocusIndex = newIndex;
+        console.log(`🎯 Focus: ${newIndex} - ${this.focusableElements[newIndex]?.className}`);
+    }
+
+    scrollToElement(element) {
+        const rect = element.getBoundingClientRect();
+        const isVisible = (
+            rect.top >= 0 &&
+            rect.left >= 0 &&
+            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+
+        if (!isVisible) {
+            element.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
                 inline: 'center'
             });
         }
-        
-        this.currentFocusIndex = newIndex;
     }
 
     activateFocusedElement() {
         const focusedElement = this.focusableElements[this.currentFocusIndex];
         if (focusedElement) {
+            console.log('🚀 Activating:', focusedElement);
+            
             if (focusedElement.classList.contains('content-item')) {
                 this.playContent(focusedElement);
+            } else if (focusedElement.tagName === 'A' || focusedElement.tagName === 'BUTTON') {
+                focusedElement.click();
             } else if (focusedElement.classList.contains('quick-link-card')) {
-                focusedElement.click();
-            } else if (focusedElement.classList.contains('nav-btn')) {
-                focusedElement.click();
-            } else if (focusedElement.classList.contains('scroll-btn')) {
+                this.handleQuickLink(focusedElement);
+            } else if (focusedElement.classList.contains('search-icon')) {
+                window.location.href = 'ara.html';
+            } else {
                 focusedElement.click();
             }
         }
     }
 
-    handleElementClick(e) {
-        const element = e.currentTarget;
+    handleElementClick(element) {
         if (element.classList.contains('content-item')) {
             this.playContent(element);
+        } else if (element.classList.contains('quick-link-card')) {
+            this.handleQuickLink(element);
+        }
+    }
+
+    handleQuickLink(card) {
+        const icon = card.querySelector('.card-icon i');
+        if (icon) {
+            if (icon.classList.contains('fa-video')) {
+                window.location.href = 'film.html';
+            } else if (icon.classList.contains('fa-compact-disc')) {
+                window.location.href = 'dizi.html';
+            } else if (icon.classList.contains('fa-camera')) {
+                window.location.href = 'belgesel.html';
+            } else if (icon.classList.contains('fa-satellite-dish')) {
+                window.location.href = 'canli.html';
+            }
         }
     }
 
@@ -203,7 +340,7 @@ class TVNavigation {
         const url = element.getAttribute('data-url');
         const title = element.getAttribute('data-title');
         
-        console.log('Playing content:', { url, title });
+        console.log('🎬 Playing content:', { url, title });
         
         if (url && url.trim() !== '') {
             try {
@@ -248,32 +385,20 @@ class TVNavigation {
     focusFirstElement() {
         if (this.focusableElements.length > 0) {
             this.currentFocusIndex = 0;
-            this.focusableElements[0].setAttribute('tabindex', '0');
-            this.focusableElements[0].focus();
+            this.updateFocus(-1, 0);
         }
     }
 
     showMessage(message) {
-        // Basit mesaj gösterme
         const messageEl = document.createElement('div');
         messageEl.className = 'tv-message';
         messageEl.textContent = message;
-        messageEl.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            z-index: 10000;
-            border: 2px solid var(--primary);
-        `;
         document.body.appendChild(messageEl);
         
         setTimeout(() => {
-            document.body.removeChild(messageEl);
+            if (document.body.contains(messageEl)) {
+                document.body.removeChild(messageEl);
+            }
         }, 3000);
     }
 
@@ -305,7 +430,18 @@ class TVNavigation {
             });
         }
     }
+
+    // Hata ayıklama için
+    debugFocusableElements() {
+        console.log('🎯 Focusable Elements:');
+        this.focusableElements.forEach((el, index) => {
+            console.log(`${index}:`, el.className, el.tagName, el.textContent.substring(0, 30));
+        });
+    }
 }
 
 // TV Navigasyonunu başlat
 const tvNavigation = new TVNavigation();
+
+// Hata ayıklama için global erişim
+window.tvNav = tvNavigation;
