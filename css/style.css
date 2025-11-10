@@ -305,6 +305,7 @@ body.tv-mode {
 
 body.tv-mode * {
   pointer-events: none;
+  user-select: none;
 }
 
 body.tv-mode .nav-btn,
@@ -320,6 +321,7 @@ body.tv-mode :focus-visible {
   transform: scale(1.05);
   transition: transform 0.1s ease;
 }
+
 
 .flex {display: flex;}
 .hidden {display: none;}
