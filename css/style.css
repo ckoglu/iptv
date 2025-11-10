@@ -297,5 +297,92 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
     .results-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:calc(var(--spacing-base) * 2)} /* 10px */
 }
 
+/* TV Optimizasyonları */
+@media (pointer: coarse) {
+  * {
+    cursor: none !important;
+  }
+}
+
+/* TV Remote için optimize */
+body.tv-mode {
+  cursor: none;
+}
+
+/* Fareyi tamamen gizle */
+body {
+  cursor: none;
+}
+
+/* TV için büyük focus stilleri */
+.nav-btn:focus,
+.quick-btn:focus, 
+.content-item:focus,
+.search-btn:focus,
+.back-btn:focus,
+.scroll-btn:focus,
+.filter-btn:focus {
+  outline: 3px solid var(--primary) !important;
+  outline-offset: 3px !important;
+  transform: scale(1.05);
+  box-shadow: 0 0 0 3px var(--primary), 0 0 20px rgba(229, 9, 20, 0.5);
+  z-index: var(--z-index-hover);
+  border-color: var(--primary) !important;
+}
+
+/* Content item focus */
+.content-item:focus {
+  transform: translateY(calc(var(--radius-base) * -2)) scale(1.02);
+  border: 2px solid var(--primary);
+}
+
+/* Quick link focus */
+.quick-link-card:focus {
+  background-color: var(--primary-hover) !important;
+  transform: translateY(calc(var(--spacing-base) * -2)) rotateY(10deg) scale(1.05);
+  border-color: var(--text-main) !important;
+}
+
+.quick-link-card:focus .card-icon {
+  color: var(--text-main) !important;
+}
+
+/* Navigation focus */
+nav ul li a:focus {
+  background-color: var(--primary) !important;
+  color: var(--text-main) !important;
+  transform: scale(1.1);
+}
+
+/* Scroll button focus */
+.scroll-btn:focus {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  transform: scale(1.2);
+}
+
+/* TV için büyük tıklama alanları */
+@media (min-width: 768px) {
+  .content-item {
+    min-width: 280px;
+  }
+  
+  .quick-link-card {
+    min-width: 200px;
+    padding: calc(var(--spacing-base) * 8) calc(var(--spacing-base) * 6);
+  }
+}
+
+/* Android TV için özel stiller */
+@media (max-width: 1920px) {
+  .content-item {
+    min-width: 250px;
+  }
+  
+  .content-poster {
+    height: 350px;
+  }
+}
+
 .flex {display: flex;}
 .hidden {display: none;}
