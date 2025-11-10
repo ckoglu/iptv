@@ -3,17 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STREAMTV - Ana Sayfa</title>
+    <title>IPTV - Ana Sayfa</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Header -->
     <header id="header">
-        <a class="logo" href="index.html">STREAMTV</a>
-        <nav>
+        <a class="logo" href="index.html">IPTV</a>
+
+        <nav id="main-nav">
+            <button class="mobile-menu-close" aria-label="Menüyü kapat">
+                <i class="fas fa-times"></i>
+            </button>
             <ul>
-                <li><a href="index.html">Ana Sayfa</a></li>
+                <li><a href="index.html" class="active">Ana Sayfa</a></li>
                 <li><a href="film.html">Film</a></li>
                 <li><a href="dizi.html">Dizi</a></li>
                 <li><a href="belgesel.html">Belgesel</a></li>
@@ -21,45 +24,73 @@
                 <li><a href="ara.html">Ara</a></li>
             </ul>
         </nav>
-        <div class="user-actions">
-            <div class="search-icon" onclick="goToSearch()">
-                <i class="fas fa-search"></i>
+
+        <div class="header-right-group">
+            <div class="user-actions">
+                <div class="search-icon" onclick="goToSearch()">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="profile">
+                    <i class="fas fa-user"></i>
+                </div>
             </div>
-            <div class="profile">
-                <i class="fas fa-user"></i>
-            </div>
+            
+            <button class="mobile-menu-toggle" aria-label="Menü" aria-expanded="false" aria-controls="main-nav">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </header>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="hero-backdrop"></div>
         <div class="hero-content">
             <h1 class="hero-title">Sınırsız Eğlence</h1>
             <p class="hero-description">Binlerce film, dizi ve canlı TV kanalı. İstediğin zaman, istediğin yerde izle. Yeni içerikler sürekli güncelleniyor.</p>
-            <div class="hero-buttons">
-                <button class="btn btn-play" onclick="goToFilms()"><i class="fas fa-play"></i> Hemen İzle</button>
-                <button class="btn btn-info" onclick="showInfo()"><i class="fas fa-info-circle"></i> Daha Fazla Bilgi</button>
-            </div>
+            <section class="quick-links-section">
+                <div class="quick-links-grid">
+                    <div class="quick-link-card" onclick="goToFilms()">
+                        <div class="card-icon"><i class="fas fa-video"></i></div>
+                        <div class="card-title">Filmler</div>
+                    </div>
+                    <div class="quick-link-card" onclick="goToSeries()">
+                        <div class="card-icon"><i class="fas fa-compact-disc"></i></div>
+                        <div class="card-title">Diziler</div>
+                    </div>
+                    <div class="quick-link-card" onclick="goToDocumentaries()">
+                        <div class="card-icon"><i class="fas fa-camera"></i></div>
+                        <div class="card-title">Belgeseller</div>
+                    </div>
+                    <div class="quick-link-card" onclick="goToLiveTV()">
+                        <div class="card-icon"><i class="fas fa-satellite-dish"></i></div>
+                        <div class="card-title">Canlı TV</div>
+                    </div>
+                </div>
+            </section>
         </div>
     </section>
 
-    <!-- Content Sections -->
+    <section class="content-section">
+        <div class="section-header">
+            <h2 class="section-title">En Son İzlenenler</h2>
+            <div class="scroll-buttons">
+                <button class="scroll-btn scroll-left" data-target="recently-watched"><i class="fas fa-chevron-left"></i></button>
+                <button class="scroll-btn scroll-right" data-target="recently-watched"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+        <div class="content-row" id="recently-watched"></div>
+    </section>
+
     <section class="content-section">
         <div class="section-header">
             <h2 class="section-title">Filmler</h2>
             <div class="scroll-buttons">
-                <button class="scroll-btn scroll-left" data-target="popular-movies">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="scroll-btn scroll-right" data-target="popular-movies">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                <button class="scroll-btn scroll-btn-all" onclick="goToFilms()">hepsini gör</button>
+                <button class="scroll-btn scroll-left" data-target="popular-movies"><i class="fas fa-chevron-left"></i></button>
+                <button class="scroll-btn scroll-right" data-target="popular-movies"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
         <div class="content-row" id="popular-movies">
-            <!-- Filmler buraya yüklenecek -->
-        </div>
+            </div>
         <div class="loading" id="movies-loading">
             <div class="spinner"></div>
         </div>
@@ -69,17 +100,13 @@
         <div class="section-header">
             <h2 class="section-title">Diziler</h2>
             <div class="scroll-buttons">
-                <button class="scroll-btn scroll-left" data-target="popular-series">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="scroll-btn scroll-right" data-target="popular-series">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                <button class="scroll-btn scroll-btn-all" onclick="goToSeries()">hepsini gör</button>
+                <button class="scroll-btn scroll-left" data-target="popular-series"><i class="fas fa-chevron-left"></i></button>
+                <button class="scroll-btn scroll-right" data-target="popular-series"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
         <div class="content-row" id="popular-series">
-            <!-- Diziler buraya yüklenecek -->
-        </div>
+            </div>
         <div class="loading" id="series-loading">
             <div class="spinner"></div>
         </div>
@@ -89,17 +116,13 @@
         <div class="section-header">
             <h2 class="section-title">Belgeseller</h2>
             <div class="scroll-buttons">
-                <button class="scroll-btn scroll-left" data-target="documentary-channels">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="scroll-btn scroll-right" data-target="documentary-channels">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                <button class="scroll-btn scroll-btn-all" onclick="goToDocumentaries()">hepsini gör</button>
+                <button class="scroll-btn scroll-left" data-target="documentary-channels"><i class="fas fa-chevron-left"></i></button>
+                <button class="scroll-btn scroll-right" data-target="documentary-channels"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
         <div class="content-row" id="documentary-channels">
-            <!-- Belgeseller buraya yüklenecek -->
-        </div>
+            </div>
         <div class="loading" id="documentary-loading">
             <div class="spinner"></div>
         </div>
@@ -109,17 +132,13 @@
         <div class="section-header">
             <h2 class="section-title">Canlı TV</h2>
             <div class="scroll-buttons">
-                <button class="scroll-btn scroll-left" data-target="live-channels">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="scroll-btn scroll-right" data-target="live-channels">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                <button class="scroll-btn scroll-btn-all" onclick="goToLiveTV()">hepsini gör</button>
+                <button class="scroll-btn scroll-left" data-target="live-channels"><i class="fas fa-chevron-left"></i></button>
+                <button class="scroll-btn scroll-right" data-target="live-channels"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
         <div class="content-row tv-channels-row" id="live-channels">
-            <!-- Canlı TV kanalları buraya yüklenecek -->
-        </div>
+            </div>
         <div class="loading" id="live-loading">
             <div class="spinner"></div>
         </div>
@@ -127,79 +146,9 @@
 
     <script src="js/navigation.js"></script>
     <script src="js/m3u-loader.js"></script>
-    <script>
-        // Header scroll effect
-        window.addEventListener('scroll', function() {
-            const header = document.getElementById('header');
-            if (window.scrollY > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
-
-        // Load content from m3u files
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Index.html loaded, starting M3U loaders...');
-            loadAllContent();
-        });
-
-        function loadAllContent() {
-            // Tüm kategorileri yükle
-            const loaders = [
-                initM3ULoader('https://raw.githubusercontent.com/ckoglu/iptv/refs/heads/main/list/film.m3u', 'popular-movies', 'film'),
-                initM3ULoader('https://raw.githubusercontent.com/ckoglu/iptv/refs/heads/main/list/dizi.m3u', 'popular-series', 'dizi'),
-                initM3ULoader('https://raw.githubusercontent.com/ckoglu/iptv/refs/heads/main/list/belgesel.m3u', 'documentary-channels', 'belgesel'),
-                initM3ULoader('https://raw.githubusercontent.com/ckoglu/iptv/refs/heads/main/list/canli.m3u', 'live-channels', 'canli')
-            ];
-
-            // Tüm loader'lar tamamlandığında
-            Promise.all(loaders).then(() => {
-                console.log('✅ Tüm içerikler yüklendi');
-                setupScrollButtons();
-            });
-        }
-
-        function setupScrollButtons() {
-            const scrollLeftBtns = document.querySelectorAll('.scroll-left');
-            const scrollRightBtns = document.querySelectorAll('.scroll-right');
-            
-            scrollLeftBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const target = this.getAttribute('data-target');
-                    scrollContent(target, -400);
-                });
-            });
-            
-            scrollRightBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const target = this.getAttribute('data-target');
-                    scrollContent(target, 400);
-                });
-            });
-        }
-
-        function scrollContent(containerId, amount) {
-            const container = document.getElementById(containerId);
-            if (container) {
-                container.scrollBy({
-                    left: amount,
-                    behavior: 'smooth'
-                });
-            }
-        }
-
-        function goToSearch() {
-            window.location.href = 'ara.html';
-        }
-
-        function goToFilms() {
-            window.location.href = 'film.html';
-        }
-
-        function showInfo() {
-            alert('STREAMTV - Sınırsız eğlence platformu. Binlerce film, dizi ve canlı TV kanalına erişim sağlayın.');
-        }
-    </script>
+    <script src="js/menu.js"></script>
+    <script src="js/scroll.js"></script>
+    <script src="js/redict.js"></script>
+    <script src="js/recently.js"></script>
 </body>
 </html>
