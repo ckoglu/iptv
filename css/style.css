@@ -297,49 +297,43 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
     .results-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:calc(var(--spacing-base) * 2)} /* 10px */
 }
 
-/* TV Optimizasyonları */
-@media (pointer: coarse) {
-  * {
-    cursor: none !important;
+/* === 📺 SMART TV OPTIMIZATIONS === */
+
+/* Web'de fare görünsün, TV'de gizlensin */
+@media (pointer: fine) {
+  body:not(.tv-mode) {
+    cursor: auto;
   }
 }
 
-/* TV Remote için optimize */
+/* TV modunda fareyi gizle */
 body.tv-mode {
-  cursor: none;
+  cursor: none !important;
 }
 
-/* Fareyi tamamen gizle */
-body {
-  cursor: none;
-}
-
-/* TV için büyük focus stilleri */
-.nav-btn:focus,
-.quick-btn:focus, 
+/* TV için büyük ve net focus stilleri */
+.quick-link-card:focus,
 .content-item:focus,
-.search-btn:focus,
-.back-btn:focus,
+nav ul li a:focus,
 .scroll-btn:focus,
-.filter-btn:focus {
-  outline: 3px solid var(--primary) !important;
+.scroll-btn-all:focus,
+.filter-btn:focus,
+.search-icon:focus,
+.profile:focus,
+.mobile-menu-toggle:focus,
+.mobile-menu-close:focus {
+  outline: 4px solid var(--primary) !important;
   outline-offset: 3px !important;
-  transform: scale(1.05);
-  box-shadow: 0 0 0 3px var(--primary), 0 0 20px rgba(229, 9, 20, 0.5);
+  transform: scale(1.08);
+  box-shadow: 0 0 0 4px var(--primary), 0 0 30px rgba(229, 9, 20, 0.6);
   z-index: var(--z-index-hover);
   border-color: var(--primary) !important;
 }
 
-/* Content item focus */
-.content-item:focus {
-  transform: translateY(calc(var(--radius-base) * -2)) scale(1.02);
-  border: 2px solid var(--primary);
-}
-
-/* Quick link focus */
+/* Quick link card focus */
 .quick-link-card:focus {
   background-color: var(--primary-hover) !important;
-  transform: translateY(calc(var(--spacing-base) * -2)) rotateY(10deg) scale(1.05);
+  transform: translateY(calc(var(--spacing-base) * -2)) rotateY(5deg) scale(1.08);
   border-color: var(--text-main) !important;
 }
 
@@ -347,73 +341,143 @@ body {
   color: var(--text-main) !important;
 }
 
-/* Navigation focus */
+/* Navigation item focus */
 nav ul li a:focus {
   background-color: var(--primary) !important;
   color: var(--text-main) !important;
-  transform: scale(1.1);
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px var(--black-alpha-50);
+}
+
+/* Content item focus */
+.content-item:focus {
+  transform: translateY(calc(var(--radius-base) * -2)) scale(1.05);
+  border: 3px solid var(--primary);
+  z-index: var(--z-index-hover);
 }
 
 /* Scroll button focus */
 .scroll-btn:focus {
   background: var(--primary) !important;
   border-color: var(--primary) !important;
+  transform: scale(1.15);
+  box-shadow: 0 0 20px rgba(229, 9, 20, 0.8);
+}
+
+.scroll-btn-all:focus {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  transform: scale(1.05);
+}
+
+/* Search icon focus */
+.search-icon:focus,
+.profile:focus {
   transform: scale(1.2);
+  color: var(--primary) !important;
+}
+
+.search-icon:focus i,
+.profile:focus i {
+  color: var(--primary) !important;
+}
+
+/* Mobile menu buttons focus */
+.mobile-menu-toggle:focus,
+.mobile-menu-close:focus {
+  transform: scale(1.2);
+  color: var(--primary) !important;
+  background: var(--white-alpha-10) !important;
 }
 
 /* TV için büyük tıklama alanları */
-@media (min-width: 768px) {
+@media (min-width: 1280px) {
   .content-item {
     min-width: 280px;
+  }
+  
+  .content-poster {
+    height: 400px;
   }
   
   .quick-link-card {
     min-width: 200px;
     padding: calc(var(--spacing-base) * 8) calc(var(--spacing-base) * 6);
   }
+  
+  .scroll-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
 }
 
-/* Android TV için özel stiller */
-@media (max-width: 1920px) {
+/* 4K TV'ler için */
+@media (min-width: 3840px) {
+  :root {
+    --font-base: 24px;
+    --spacing-base: 8px;
+  }
+  
   .content-item {
-    min-width: 250px;
+    min-width: 350px;
   }
   
   .content-poster {
-    height: 350px;
+    height: 500px;
   }
 }
 
 /* TV Mesaj Stili */
 .tv-message {
-    font-size: calc(var(--font-base) * 1.3);
-    padding: calc(var(--spacing-base) * 4);
-    background: var(--black-alpha-90);
-    color: var(--text-main);
-    border: 3px solid var(--primary);
-    border-radius: calc(var(--radius-base) * 2);
-    text-align: center;
-    max-width: 80%;
-    margin: 0 auto;
+  font-size: calc(var(--font-base) * 1.4);
+  padding: calc(var(--spacing-base) * 5);
+  background: var(--black-alpha-95);
+  color: var(--text-main);
+  border: 4px solid var(--primary);
+  border-radius: calc(var(--radius-base) * 3);
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-index-toast);
+  backdrop-filter: blur(10px);
 }
 
-/* TV Modu için ek stiller */
-body.tv-mode .content-item {
-    transition: all 0.3s ease;
+/* Focus indicator for TV */
+.focus-indicator {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border: 3px solid var(--primary);
+  border-radius: calc(var(--radius-base) * 2);
+  pointer-events: none;
+  z-index: var(--z-index-hover);
+  animation: pulse 2s infinite;
 }
 
-body.tv-mode .content-item:focus {
-    transform: scale(1.05);
-    z-index: 100;
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
-/* Scroll bar'ları gizle ama navigasyon çalışsın */
-body.tv-mode .content-row {
-    scrollbar-width: none;
-}
-
-body.tv-mode .content-row::-webkit-scrollbar {
-    display: none;
+/* Ensure all interactive elements are focusable */
+.quick-link-card,
+.content-item,
+nav ul li a,
+.scroll-btn,
+.scroll-btn-all,
+.filter-btn,
+.search-icon,
+.profile,
+.mobile-menu-toggle,
+.mobile-menu-close {
+  position: relative;
 }
 
 .flex {display: flex;}
