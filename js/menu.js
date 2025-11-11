@@ -1,7 +1,6 @@
 // Tüm JS kodları DOM yüklendiğinde çalışır
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Index.html loaded, starting scripts...');
-    
+  
     // --- Mobil Menü Fonksiyonları ---
     const menuToggle = document.querySelector('.mobile-menu-toggle');
     const menuClose = document.querySelector('.mobile-menu-close');
@@ -35,4 +34,5 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // --- İçerik Yükleyici Fonksiyonları ---
     loadAllContent();
+
 });
