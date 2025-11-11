@@ -69,6 +69,22 @@ class M3ULoader {
                 }
             }
         }
+
+        // 🔹 DİZİ için benzersiz liste oluştur
+        if (this.contentType === 'dizi') {
+            const unique = {};
+            this.items.forEach(it => {
+                const baseName = it.title.split(':')[0].trim();
+                if (!unique[baseName]) {
+                    unique[baseName] = {
+                        ...it,
+                        title: baseName,
+                        url: `bolum.html?dizi=${encodeURIComponent(baseName)}`
+                    };
+                }
+            });
+            this.items = Object.values(unique);
+        }
     }
 
     parseEXTINF(extinfLine, url) {
@@ -80,7 +96,17 @@ class M3ULoader {
                 attrs[match[1]] = match[2];
             }
 
-            const title = this.cleanTitle(extinfLine.split(',').pop()?.trim() || 'Bilinmeyen Başlık');
+            let title = this.cleanTitle(extinfLine.split(',').pop()?.trim() || 'Bilinmeyen Başlık');
+            
+            // 🔹 Sadece DİZİ için ek: sezon/bölüm bilgisi yakala
+            let extraInfo = '';
+            if (this.contentType === 'dizi') {
+                const seMatch = title.match(/s(\d{1,2})e(\d{1,2})/i);
+                if (seMatch) {
+                    extraInfo = `Sezon ${parseInt(seMatch[1])}, Bölüm ${parseInt(seMatch[2])}`;
+                    title = title.replace(/s\d{1,2}e\d{1,2}/i, '').trim();
+                }
+            }
 
             return {
                 title,
@@ -91,7 +117,8 @@ class M3ULoader {
                     name: attrs['tvg-name'] || '',
                     logo: attrs['tvg-logo'] || ''
                 },
-                attributes: attrs
+                attributes: attrs,
+                extraInfo // sadece dizilerde dolu
             };
         } catch (err) {
             console.warn('EXTINF parse hatası:', err);
@@ -192,8 +219,21 @@ class M3ULoader {
             </div>
         `;
 
-        div.addEventListener('click', () => this.playContent(item));
-        div.addEventListener('keydown', e => e.key === 'Enter' && this.playContent(item));
+        // 🔹 DİZİ ise bölümler sayfasına git
+        div.addEventListener('click', () => {
+            if (this.contentType === 'dizi') {
+                window.location.href = item.url; // bolum.html?dizi=Snowpiercer
+            } else {
+                this.playContent(item);
+            }
+        });
+
+        div.addEventListener('keydown', e => e.key === 'Enter' && (
+            this.contentType === 'dizi'
+                ? window.location.href = item.url
+                : this.playContent(item)
+        ));
+
         return div;
     }
 
