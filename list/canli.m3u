@@ -1,4 +1,3 @@
-#EXTM3U x-tvg-url="https://epg.tvcdn.net/guide/tr-guide.xml"
 #EXTINF:-1 tvg-id="TRT1.tr" tvg-logo="http://assets.tvcdn.net/1045ea2f-2453-451d-a55f-ba17539641dd.png" group-title="Ulusal",TRT 1
 https://trt.daioncdn.net/trt-1/master.m3u8?app=web
 #EXTINF:-1 tvg-id="ATV.tr" tvg-logo="http://assets.tvcdn.net/89a47b4b-5d20-4248-9f4c-a3d2756072dd.png" group-title="Ulusal",ATV
@@ -317,8 +316,8 @@ https://live.artidijitalmedya.com/artidijital_cine1/cine1/playlist.m3u8
 https://live.artidijitalmedya.com/artidijital_lifetv/lifetv/playlist.m3u8
 #EXTINF:-1 tvg-name="TRT SPOR" tvg-id="TRTSpor.tr" tvg-logo="https://i.ibb.co/WxD4PLG/trt-spor.png" group-title="SPOR",TRT SPOR
 https://tv-trtspor1.medya.trt.com.tr/master_720.m3u8
-##EXTINF:-1 tvg-name="TRT SPOR" tvg-id="TRTSpor.tr" tvg-logo="https://i.ibb.co/GFP51yN/trt-3-spor.png" group-title="SPOR",TRT 3 SPOR
-##http://162.212.179.32/gin-dvrfl05/gin-trtspor3/playlist.m3u8
+#EXTINF:-1 tvg-name="TRT SPOR" tvg-id="TRTSpor.tr" tvg-logo="https://i.ibb.co/GFP51yN/trt-3-spor.png" group-title="SPOR",TRT 3 SPOR
+http://162.212.179.32/gin-dvrfl05/gin-trtspor3/playlist.m3u8
 #EXTINF:-1 tvg-name="beIN SPORTS HABER" tvg-id="beINSportsHaber.tr" tvg-id="beIN SPORTS HABER" tvg-logo="https://i.ibb.co/GdkQ5mY/bein-sports-haber.png" group-title="SPOR",beIN SPORTS HABER
 https://tgn.bozztv.com/dvrfl05/gin-beinsportshaber/tracks-v1a1/mono.m3u8
 #EXTINF:-1 tvg-name="TV 8.5" tvg-id="TV85.tr" tvg-logo="https://i.ibb.co/6PRYHdW/tv85.png" group-title="SPOR",TV 8.5
@@ -338,8 +337,8 @@ https://owifavo5.rocketcdn.com/gstv/gstv.smil/chunklist_b1828000_sltur.m3u8
 https://tjktv-live.tjk.org/tjktv_1080p.m3u8
 #EXTINF:-1 tvg-name="TJK TV" tvg-id="TJKTV.tr" tvg-logo="https://i.ibb.co/PrkXrRn/tjk-tv.png" group-title="SPOR",TJK TV YURT DISI
 https://tjktv-live.tjk.org/tjktv2/tjktv2_1080p.m3u8
-##EXTINF:-1 tvg-name="TAY TV" tvg-id="TAYTV.tr" tvg-logo="https://i.ibb.co/J3Pb4qv/tay-tv.png" group-title="SPOR",TAY TV
-##https://raw.githubusercontent.com/rideordie16/YouTube/main/spor/taytv.m3u8
+#EXTINF:-1 tvg-name="TAY TV" tvg-id="TAYTV.tr" tvg-logo="https://i.ibb.co/J3Pb4qv/tay-tv.png" group-title="SPOR",TAY TV
+https://raw.githubusercontent.com/rideordie16/YouTube/main/spor/taytv.m3u8
 #EXTINF:-1 tvg-name="TRT BELGESEL" tvg-id="TRTBelgesel.tr" tvg-logo="https://i.ibb.co/MkvY46q/trt-belgesel.png" group-title="BELGESEL",TRT BELGESEL
 https://tv-trtbelgesel.medya.trt.com.tr/master_720.m3u8
 #EXTINF:-1 tvg-name="DMAX" tvg-id="DMAX.tr" tvg-logo="https://i.ibb.co/1LH22gK/dmax.png" group-title="BELGESEL",DMAX
@@ -434,225 +433,3 @@ https://listen.powerapp.com.tr/plove/love.smil/chunklist_b1028000_sltur.m3u8
 https://listen.powerapp.com.tr/pturkakustik/akustik.smil/chunklist_b1028000_sltur.m3u8
 #EXTINF:-1 tvg-name="POWER TURK SLOW" tvg-id="" tvg-logo="https://i.ibb.co/R4pcKqK/powerturk-slow.png" group-title="MUZIK",POWER TURK SLOW
 https://listen.powerapp.com.tr/pturkslow/slow.smil/chunklist_b1028000_sltur.m3u8
-#EXTINF:-1 tvg-name="TR: TRT 4K" group-title="ULUSAL",TR: TRT 4K
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49172
-#EXTINF:-1 tvg-name="TR: TRT1 HD" group-title="ULUSAL",TR: TRT1 HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48839
-#EXTINF:-1 tvg-name="TR: TRT 1" group-title="ULUSAL",TR: TRT 1
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48840
-#EXTINF:-1 tvg-name="TR: TRT2 HD" group-title="ULUSAL",TR: TRT2 HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48841
-#EXTINF:-1 tvg-name="TR: TRT TURK HD" group-title="ULUSAL",TR: TRT TURK HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48842
-#EXTINF:-1 tvg-name="TR: TRT TURK" group-title="ULUSAL",TR: TRT TURK
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48843
-#EXTINF:-1 tvg-name="TR: ATV HD" group-title="ULUSAL",TR: ATV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48846
-#EXTINF:-1 tvg-name="TR: ATV" group-title="ULUSAL",TR: ATV
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48847
-#EXTINF:-1 tvg-name="TR: SHOW HD" group-title="ULUSAL",TR: SHOW HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48848
-#EXTINF:-1 tvg-name="TR: SHOW TV" group-title="ULUSAL",TR: SHOW TV
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48849
-#EXTINF:-1 tvg-name="TR: SHOW Turk HD" group-title="ULUSAL",TR: SHOW Turk HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48850
-#EXTINF:-1 tvg-name="TR: STAR TV HD" group-title="ULUSAL",TR: STAR TV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48851
-#EXTINF:-1 tvg-name="TR: STAR TV" group-title="ULUSAL",TR: STAR TV
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48852
-#EXTINF:-1 tvg-name="TR: EUROSTAR SD" group-title="ULUSAL",TR: EUROSTAR SD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48853
-#EXTINF:-1 tvg-name="TR: Kanal D HD" group-title="ULUSAL",TR: Kanal D HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48854
-#EXTINF:-1 tvg-name="TR: KANAL D" group-title="ULUSAL",TR: KANAL D
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48855
-#EXTINF:-1 tvg-name="TR: EURO D HD" group-title="ULUSAL",TR: EURO D HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48856
-#EXTINF:-1 tvg-name="TR: EURO D" group-title="ULUSAL",TR: EURO D
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48857
-#EXTINF:-1 tvg-name="TR: NOW TV HD" group-title="ULUSAL",TR: NOW TV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48858
-#EXTINF:-1 tvg-name="TR: TV 8 HD" group-title="ULUSAL",TR: TV 8 HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48859
-#EXTINF:-1 tvg-name="TR: TV 8 SD" group-title="ULUSAL",TR: TV 8 SD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48860
-#EXTINF:-1 tvg-name="TR: TV 8 INT" group-title="ULUSAL",TR: TV 8 INT
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48861
-#EXTINF:-1 tvg-name="TR: TV 8.5 HD" group-title="ULUSAL",TR: TV 8.5 HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48862
-#EXTINF:-1 tvg-name="TR: KANAL 7 HD" group-title="ULUSAL",TR: KANAL 7 HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48863
-#EXTINF:-1 tvg-name="TR: TV8 5" group-title="ULUSAL",TR: TV8 5
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48864
-#EXTINF:-1 tvg-name="TR: KANAL 7" group-title="ULUSAL",TR: KANAL 7
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48865
-#EXTINF:-1 tvg-name="TR: KANAL 7 AVRUPA" group-title="ULUSAL",TR: KANAL 7 AVRUPA
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48866
-#EXTINF:-1 tvg-name="TR: SHOW MAX HD" group-title="ULUSAL",TR: SHOW MAX HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48867
-#EXTINF:-1 tvg-name="TR: SHOW MAX" group-title="ULUSAL",TR: SHOW MAX
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48868
-#EXTINF:-1 tvg-name="TR: TGRT EU" group-title="ULUSAL",TR: TGRT EU
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48869
-#EXTINF:-1 tvg-name="TR: TEVE2 HD" group-title="ULUSAL",TR: TEVE2 HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48870
-#EXTINF:-1 tvg-name="TR: Teve 2" group-title="ULUSAL",TR: Teve 2
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48871
-#EXTINF:-1 tvg-name="TR: TLC" group-title="ULUSAL",TR: TLC
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48872
-#EXTINF:-1 tvg-name="TR: A2 TV HD" group-title="ULUSAL",TR: A2 TV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48873
-#EXTINF:-1 tvg-name="TR: A2" group-title="ULUSAL",TR: A2
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48874
-#EXTINF:-1 tvg-name="TR: FX HD" group-title="ULUSAL",TR: FX HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48875
-#EXTINF:-1 tvg-name="TR: 360 TV HD" group-title="ULUSAL",TR: 360 TV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48876
-#EXTINF:-1 tvg-name="TR: BLOOMBERGHT HD" group-title="ULUSAL",TR: BLOOMBERGHT HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48877
-#EXTINF:-1 tvg-name="TR: TV 100" group-title="ULUSAL",TR: TV 100
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48879
-#EXTINF:-1 tvg-name="TR: HALK TV" group-title="ULUSAL",TR: HALK TV
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48888
-#EXTINF:-1 tvg-name="NPO 1" group-title="YABANCITV",NPO 1
-#EXTVLCOPT:network-caching=1000
-http://62.131.195.211:8086/12.ts
-#EXTINF:-1 tvg-name="NPO 2" group-title="YABANCITV",NPO 2
-#EXTVLCOPT:network-caching=1000
-http://62.131.195.211:8087/20.ts
-#EXTINF:-1 tvg-name="Z SELECT" group-title="YABANCITV",Z SELECT
-#EXTVLCOPT:network-caching=1000
-http://62.131.195.211:8086/0.ts
-#EXTINF:-1 tvg-name="EUROSPORT 1" group-title="YABANCITV",EUROSPORT 1
-#EXTVLCOPT:network-caching=1000
-http://62.131.195.211:8086/8.ts
-#EXTINF:-1 tvg-name="ESPN" group-title="YABANCITV",ESPN
-#EXTVLCOPT:network-caching=1000
-http://62.131.195.211:8086/4.ts
-#EXTINF:-1 tvg-name="EURONEWS" group-title="YABANCITV",EURONEWS
-#EXTVLCOPT:network-caching=1000
-http://46.47.113.35:4000/euronews.ts
-#EXTINF:-1 tvg-name="CNBC" group-title="YABANCITV",CNBC
-#EXTVLCOPT:network-caching=1000
-http://46.47.113.35:4000/cnbc.ts
-#EXTINF:-1 tvg-name="BBCNEWS" group-title="YABANCITV",BBCNEWS
-#EXTVLCOPT:network-caching=1000
-http://46.47.113.35:4000/bbcnews.ts
-#EXTINF:-1 tvg-name="VERONICA TV" group-title="YABANCITV",VERONICA TV
-#EXTVLCOPT:network-caching=1000
-https://daddy.mark-clark.workers.dev/?ID=378
-#EXTINF:-1 tvg-name="XXX: Penthouse Gold HD" group-title="MALUM YAYINLAR EROTiK",XXX: Penthouse Gold HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48992
-#EXTINF:-1 tvg-name="XXX: Penthouse Reality TV HD" group-title="MALUM YAYINLAR EROTiK",XXX: Penthouse Reality TV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48993
-#EXTINF:-1 tvg-name="XXX: Babes TV HD" group-title="MALUM YAYINLAR EROTiK",XXX: Babes TV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48994
-#EXTINF:-1 tvg-name="XXX: BangU" group-title="MALUM YAYINLAR EROTiK",XXX: BangU
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48995
-#EXTINF:-1 tvg-name="XXX: Barely Legal" group-title="MALUM YAYINLAR EROTiK",XXX: Barely Legal
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48996
-#EXTINF:-1 tvg-name="XXX: Blue Hustler" group-title="MALUM YAYINLAR EROTiK",XXX: Blue Hustler
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48997
-#EXTINF:-1 tvg-name="PXXX: Brazzers TV" group-title="MALUM YAYINLAR EROTiK",XXX: Brazzers TV
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48998
-#EXTINF:-1 tvg-name="XXX: Dorcel TV HD" group-title="MALUM YAYINLAR EROTiK",XXX: Dorcel TV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/48999
-#EXTINF:-1 tvg-name="XXX: Erox HD" group-title="MALUM YAYINLAR EROTiK",XXX: Erox HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49001
-#EXTINF:-1 tvg-name="XXX: Eroxxx HD" group-title="MALUM YAYINLAR EROTiK",XXX: Eroxxx HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49002
-#EXTINF:-1 tvg-name="XXX: Evil Angel HD" group-title="MALUM YAYINLAR EROTiK",XXX: Evil Angel HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49003
-#EXTINF:-1 tvg-name="XXX: Extasy" group-title="MALUM YAYINLAR EROTiK",XXX: Extasy
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49004
-#EXTINF:-1 tvg-name="XXX: Fantazzy TV" group-title="MALUM YAYINLAR EROTiK",XXX: Fantazzy TV
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49005
-#EXTINF:-1 tvg-name="XXX: Hustler" group-title="MALUM YAYINLAR EROTiK",XXX: Hustler
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49006
-#EXTINF:-1 tvg-name="XXX: Hustler HD" group-title="MALUM YAYINLAR EROTiK",XXX: Hustler HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49007
-#EXTINF:-1 tvg-name="XXX: Playboy TV HD" group-title="MALUM YAYINLAR EROTiK",XXX: Playboy TV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49008
-#EXTINF:-1 tvg-name="XXX: Pure Babes" group-title="MALUM YAYINLAR EROTiK",XXX: Private TV HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49009
-#EXTINF:-1 tvg-name="Penthouse Gold HD" group-title="MALUM YAYINLAR EROTiK",XXX: Pure Babes
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49010
-#EXTINF:-1 tvg-name="XXX: Reality Kings" group-title="MALUM YAYINLAR EROTiK",XXX: Reality Kings
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49011
-#EXTINF:-1 tvg-name="XXX: Redlight HD" group-title="MALUM YAYINLAR EROTiK",XXX: Redlight HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49012
-#EXTINF:-1 tvg-name="XXX: Vivid Red HD" group-title="MALUM YAYINLAR EROTiK",XXX: Vivid Red HD
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49013
-#EXTINF:-1 tvg-name="XXX: Super One" group-title="MALUM YAYINLAR EROTiK",XXX: Super One
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49014
-#EXTINF:-1 tvg-name="XXX: XY plus" group-title="MALUM YAYINLAR EROTiK",XXX: XY plus
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49015
-#EXTINF:-1 tvg-name="XXX: XY max" group-title="MALUM YAYINLAR EROTiK",XXX: XY max
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49016
-#EXTINF:-1 tvg-name="XXX: XY mix" group-title="MALUM YAYINLAR EROTiK",XXX: XY mix
-#EXTVLCOPT:network-caching=1000
-http://apx-me.com:8880/live:persian_share/Hs6guU9ziF/49017
