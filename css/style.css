@@ -129,7 +129,7 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 .content-item:focus{outline:var(--outline-width) solid var( --primary);outline-offset:var(--outline-offset)}
 .content-poster{width:100%;height:450px;display:flex;align-items:center;justify-content:center;font-size:calc(var(--font-base) * 3);color:var( --text-main);background-size:cover;background-position:center;background-repeat:no-repeat;position:relative;overflow:hidden} /* 3rem */
 .content-poster i{position:relative;z-index:-1;text-shadow:2px 2px 8px var( --black-alpha-70)}
-.item-info{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgb(0 0 0) 30%,#00000000 100%);padding:75px calc(var(--spacing-base) * 2) calc(var(--spacing-base) * 2);opacity:0;transition:opacity var(--transition-time)} /* 10px */
+.item-info{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgb(0 0 0) 30%,#00000000 100%);padding:75px calc(var(--spacing-base) * 2) calc(var(--spacing-base) * 2);opacity:1;transition:opacity var(--transition-time)} /* 10px */
 .content-item:hover .item-info{opacity:1}
 .item-title{font-size:calc(var(--font-base)*1.15);font-weight:700;margin-bottom:var(--spacing-base)} /* 16px, 5px */
 .item-meta{font-size:calc(var(--font-base)*0.8);color:var( --text-meta)} /* 12px */
