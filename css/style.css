@@ -227,6 +227,9 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 .header-right-group {display: flex;align-items: center;gap: calc(var(--spacing-base) * 2); /* 10px */}
 .mobile-menu-toggle,.mobile-menu-close {display: none;background: transparent;border: none;color: var( --text-main);font-size: 1.5rem; /* 24px */cursor: pointer;padding: var(--spacing-base); /* 5px */z-index: var(--z-index-menu-close); /* Menünün üstünde */}
 
+.pt30{padding-top: 30px;}
+
+
 /* ===  responsive (Tablet & Mobil) === */
 @media (max-width: 768px){
     /* === Mobil Menü Devrede === */
