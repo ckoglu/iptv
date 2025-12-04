@@ -70,7 +70,7 @@ class M3ULoader {
             }
         }
 
-        // 🔹 DİZİ için benzersiz liste oluştur
+        // dizi için benzersiz liste oluştur
         if (this.contentType === 'dizi') {
             const unique = {};
             this.items.forEach(it => {
@@ -98,7 +98,7 @@ class M3ULoader {
 
             let title = this.cleanTitle(extinfLine.split(',').pop()?.trim() || 'Bilinmeyen Başlık');
             
-            // 🔹 Sadece DİZİ için ek: sezon/bölüm bilgisi yakala
+            // Sadece dizi icin ek: sezon/bölüm bilgisi yakala
             let extraInfo = '';
             if (this.contentType === 'dizi') {
                 const seMatch = title.match(/s(\d{1,2})e(\d{1,2})/i);
@@ -262,8 +262,15 @@ class M3ULoader {
         return icons[this.contentType] || 'fas fa-play';
     }
 
-    getCategoryName(g) {
+    getCategoryName(g, itemTitle = '') {
         const t = g?.toLowerCase() || '';
+        const title = itemTitle?.toLowerCase() || '';
+        
+        // .ders içeren içerikler için Eğitim
+        if (title.includes('.ders') || title.includes('ders ')) {
+            return 'Eğitim';
+        }
+        
         if (t.includes('film')) return 'Film';
         if (t.includes('dizi')) return 'Dizi';
         if (t.includes('belgesel')) return 'Belgesel';
@@ -274,7 +281,9 @@ class M3ULoader {
         if (t.includes('çocuk')) return 'Çocuk';
         return this.contentType;
     }
-
+    
+    const category = this.getCategoryName(item.group, item.title);
+    
     escapeHtml(t) {
         const div = document.createElement('div');
         div.textContent = t;
@@ -338,3 +347,4 @@ class M3ULoader {
 function initM3ULoader(m3uUrl, containerId, contentType) {
     return new M3ULoader(m3uUrl, containerId, contentType);
 }
+
