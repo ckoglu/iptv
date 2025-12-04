@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  titleEl.textContent = `${diziAd} Bölümleri`;
+  titleEl.textContent = `${diziAd}`;
   loadingEl.style.display = "block";
 
   try {
