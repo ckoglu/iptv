@@ -84,10 +84,6 @@ class NetflixPlayer {
                     urlLower.includes('/hls/') ||
                     urlLower.includes('m3u8') ||
                     urlLower.includes('hls');
-
-        console.log('Video URL:', videoUrl);
-        console.log('Is HLS?', this.isHLS);
-
         if (this.isHLS) {
             // HLS video (m3u8)
             this.setupHLSVideo(videoUrl);
@@ -98,22 +94,17 @@ class NetflixPlayer {
     }
 
     setupHLSVideo(videoUrl) {
-        console.log('Setting up HLS video...');
-        
         // HLS.js kütüphanesinin yüklü olup olmadığını kontrol et
         if (typeof Hls === 'undefined') {
-            console.error('Hls.js kütüphanesi yüklenmemiş!');
             this.showError('HLS desteği yüklenemedi. Lütfen sayfayı yenileyin.');
             return;
         }
 
         // HLS desteği kontrolü
         if (Hls.isSupported()) {
-            console.log('Hls.js supported, using Hls.js');
             this.setupHlsJS(videoUrl);
         } else if (this.videoElement.canPlayType('application/vnd.apple.mpegurl')) {
             // Safari için native HLS desteği
-            console.log('Native HLS supported (Safari)');
             this.setupNativeHLS(videoUrl);
         } else {
             this.showError('Tarayıcınız HLS formatını desteklemiyor. Lütfen Chrome, Firefox veya Edge kullanın.');
@@ -121,8 +112,6 @@ class NetflixPlayer {
     }
 
     setupDirectVideo(videoUrl) {
-        console.log('Setting up direct video...');
-        
         // Video elementini temizle
         this.videoElement.src = '';
         this.videoElement.load();
@@ -149,10 +138,8 @@ class NetflixPlayer {
         
         // Video element event listeners
         const onLoadedData = () => {
-            console.log('Direct video loaded');
             this.hideLoading();
             this.videoElement.play().catch(e => {
-                console.log('Autoplay prevented:', e);
                 this.hideLoading();
                 // Kullanıcı etkileşimi bekliyoruz
                 this.showControls();
@@ -160,12 +147,10 @@ class NetflixPlayer {
         };
         
         const onCanPlay = () => {
-            console.log('Direct video can play');
             this.hideLoading();
         };
         
         const onError = (e) => {
-            console.error('Direct video error:', e);
             this.handlePlayerError();
         };
         
@@ -185,8 +170,6 @@ class NetflixPlayer {
 
     setupHlsJS(videoUrl) {
         try {
-            console.log('Initializing Hls.js...');
-            
             // Eski HLS instance'ını temizle
             if (this.hls) {
                 this.hls.destroy();
@@ -214,7 +197,6 @@ class NetflixPlayer {
             
             // HLS event listener'ları
             this.hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
-                console.log('HLS manifest parsed:', data);
                 this.hideLoading();
                 
                 // Quality seviyelerini al
@@ -223,19 +205,16 @@ class NetflixPlayer {
                 
                 // Video'yu oynat
                 this.videoElement.play().catch(e => {
-                    console.log('Autoplay prevented:', e);
                     this.hideLoading();
                     this.showControls();
                 });
             });
 
             this.hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
-                console.log('HLS level loaded:', data.level);
                 this.hideLoading();
             });
 
             this.hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-                console.log('Quality switched to level:', data.level);
             });
 
             this.hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
@@ -267,9 +246,6 @@ class NetflixPlayer {
             // HLS'yi video elementine bağla
             this.hls.loadSource(videoUrl);
             this.hls.attachMedia(this.videoElement);
-            
-            console.log('Hls.js setup complete');
-            
         } catch (error) {
             console.error('Hls.js setup error:', error);
             this.showError('HLS oynatıcı başlatılamadı: ' + error.message);
@@ -277,8 +253,6 @@ class NetflixPlayer {
     }
 
     setupNativeHLS(videoUrl) {
-        console.log('Setting up native HLS...');
-        
         // Video elementini temizle
         this.videoElement.src = '';
         this.videoElement.load();
@@ -287,17 +261,14 @@ class NetflixPlayer {
         this.videoElement.src = videoUrl;
         
         const onLoadedData = () => {
-            console.log('Native HLS loaded');
             this.hideLoading();
             this.videoElement.play().catch(e => {
-                console.log('Autoplay prevented:', e);
                 this.hideLoading();
                 this.showControls();
             });
         };
         
         const onCanPlay = () => {
-            console.log('Native HLS can play');
             this.hideLoading();
         };
         
@@ -322,9 +293,6 @@ class NetflixPlayer {
             }
             return;
         }
-
-        console.log('Setting up quality selector with', this.qualities.length, 'qualities');
-        
         this.videoQuality.style.display = 'block';
         this.videoQuality.innerHTML = '';
         
@@ -338,7 +306,6 @@ class NetflixPlayer {
         autoButton.addEventListener('click', () => {
             if (this.hls) {
                 this.hls.currentLevel = -1;
-                console.log('Quality switched to: Auto');
             }
             this.videoQuality.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
             autoButton.classList.add('active');
@@ -356,7 +323,6 @@ class NetflixPlayer {
             button.addEventListener('click', () => {
                 if (this.hls) {
                     this.hls.currentLevel = index;
-                    console.log('Quality switched to:', height + 'p');
                 }
                 // Aktif butonu güncelle
                 this.videoQuality.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
@@ -421,7 +387,6 @@ class NetflixPlayer {
     setPlaybackSpeed(speed) {
         this.currentPlaybackSpeed = speed;
         this.videoElement.playbackRate = speed;
-        console.log('Playback speed set to:', speed + 'x');
         if (this.playbackSpeedBtn) {
             this.playbackSpeedBtn.textContent = speed === 1 ? 'Normal' : speed + 'x';
         }
@@ -955,12 +920,10 @@ class NetflixPlayer {
     }
 
     onPiPStart() {
-        console.log('Picture-in-Picture started');
         this.isPiP = true;
     }
 
     onPiPStop() {
-        console.log('Picture-in-Picture stopped');
         this.isPiP = false;
     }
 
@@ -1071,7 +1034,6 @@ function checkHlsLoaded() {
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
         script.onload = () => {
-            console.log('Hls.js loaded from CDN');
             // Hls.js yüklendikten sonra player'ı başlat
             if (!window.netflixPlayer) {
                 window.netflixPlayer = new NetflixPlayer();
@@ -1120,7 +1082,6 @@ window.addEventListener('beforeunload', () => {
 
 // Hata durumunda yeniden deneme
 window.addEventListener('online', () => {
-    console.log('Internet connection restored');
     const errorOverlay = document.getElementById('errorOverlay');
     if (errorOverlay && errorOverlay.style.display === 'flex') {
         retryPlayback();
@@ -1146,3 +1107,4 @@ window.debugPlayer = function() {
         console.log('- HLS currentTime:', window.netflixPlayer.hls.currentTime);
     }
 };
+
