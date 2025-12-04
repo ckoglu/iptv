@@ -203,37 +203,40 @@ class M3ULoader {
         div.dataset.url = item.url;
         div.dataset.title = item.title;
         div.dataset.type = this.contentType;
-
+    
         const logo = item.tvg.logo || this.getManualLogo(item.title) || '';
         const bg = logo ? `url('${logo}')` : this.getRandomGradient();
         const cls = this.contentType === 'canli' ? 'content-poster tv-logo' : 'content-poster';
         const icon = this.getIconForContent();
-
+        
+        // .ders kontrolü yap
+        const category = this.getCategoryName(item.group, item.title);
+    
         div.innerHTML = `
             <div class="${cls}" style="background-image:${bg}">
                 <i class="${icon}"></i>
             </div>
             <div class="item-info">
                 <div class="item-title">${this.escapeHtml(item.title)}</div>
-                <div class="item-meta">${this.escapeHtml(this.getCategoryName(item.group))}</div>
+                <div class="item-meta">${this.escapeHtml(category)}</div>
             </div>
         `;
-
-        // 🔹 DİZİ ise bölümler sayfasına git
+    
+        // dizi ise bölümler sayfasına git
         div.addEventListener('click', () => {
             if (this.contentType === 'dizi') {
-                window.location.href = item.url; // bolum.html?dizi=Snowpiercer
+                window.location.href = item.url; 
             } else {
                 this.playContent(item);
             }
         });
-
+    
         div.addEventListener('keydown', e => e.key === 'Enter' && (
             this.contentType === 'dizi'
                 ? window.location.href = item.url
                 : this.playContent(item)
         ));
-
+    
         return div;
     }
 
@@ -347,4 +350,5 @@ class M3ULoader {
 function initM3ULoader(m3uUrl, containerId, contentType) {
     return new M3ULoader(m3uUrl, containerId, contentType);
 }
+
 
