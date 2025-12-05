@@ -44,7 +44,7 @@
   --z-index-menu-close: 2001;
 }
 
-/* === 🖥️ Temel Stiller === */
+/* === Temel Stiller === */
 *{margin:0;padding:0;box-sizing:border-box;font-family:var(--font-family-primary)}
 body{background-color:var( --bg-main);color:var( --text-main);overflow-x:hidden}
 
@@ -86,6 +86,7 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 .card-icon{font-size:calc(var(--font-base) * 3);color:var( --primary);margin-bottom:calc(var(--spacing-base) * 2);transition:color .4s cubic-bezier(.25, .8, .25, 1)}
 .quick-link-card:hover .card-icon{color:var( --text-main)}
 .card-title{font-size:calc(var(--font-base) * 1.25);font-weight:700;color:var( --text-main)}
+
 @media (max-width:768px){
 .quick-links-section{padding:0;margin-top:0}
 .quick-links-grid{grid-template-columns:repeat(2,1fr);gap:calc(var(--spacing-base) * 3)}
@@ -223,19 +224,22 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
-/* === 📱 Mobil Menü Stilleri === */
+/* === Mobil Menü Stilleri === */
 .header-right-group {display: flex;align-items: center;gap: calc(var(--spacing-base) * 2); /* 10px */}
 .mobile-menu-toggle,.mobile-menu-close {display: none;background: transparent;border: none;color: var( --text-main);font-size: 1.5rem; /* 24px */cursor: pointer;padding: var(--spacing-base); /* 5px */z-index: var(--z-index-menu-close); /* Menünün üstünde */}
-
 .pt30{padding-top: 30px;}
 
+.netflix-player.mobile .controls-container{padding-bottom:20px}
+.netflix-player.mobile .progress-bar{height:4px}
+.netflix-player.mobile .progress-handle{width:20px;height:20px}
+.netflix-player.mobile:-webkit-full-screen .controls-container{padding-bottom:env(safe-area-inset-bottom,20px)}
+.skip-feedback{animation:fadeInOut 1s ease-in-out}
+@keyframes fadeInOut{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.8)}}
 
 /* ===  responsive (Tablet & Mobil) === */
 @media (max-width: 768px){
-    /* === Mobil Menü Devrede === */
     .header-right-group{display:flex;align-items:center;gap:calc(var(--spacing-base) * 2)}
     .mobile-menu-close,.mobile-menu-toggle{display:none;background:0 0;border:none;color:var( --text-main);font-size:1.5rem;cursor:pointer;padding:var(--spacing-base);z-index:var(--z-index-menu-close)}
-
     .mobile-menu-toggle{display:block;font-size:1.3rem;order:2}
     .user-actions{order:1;gap:calc(var(--spacing-base) * 3)}
     header nav{position:fixed;top:0;right:0;width:100%;height:100vh;background-color:var( --bg-main);z-index:var(--z-index-menu);transform:translateX(100%);transition:transform var(--transition-time) ease;padding:calc(var(--spacing-base) * 12) calc(var(--spacing-base) * 4);box-shadow:-5px 0 15px rgba(0,0,0,.5)}
@@ -244,7 +248,6 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
     header nav ul{flex-direction:column;align-items:flex-start;gap:calc(var(--spacing-base) * 4);width:100%}
     header nav ul li{width:100%;margin:0}
     header nav ul li a{font-size:1.25rem;display:block;width:100%}
-    /* === Diğer 768px Düzenlemeleri === */
     .section-header{flex-direction:column;align-items:flex-start;gap:calc(var(--spacing-base) * 2)} /* 10px */
     .scroll-buttons{align-self:flex-end}
     .scroll-btn{width:35px;height:35px;font-size:.9rem}
@@ -253,7 +256,6 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
     .content-poster.tv-logo{padding:calc(var(--spacing-base) * 3)!important} /* 15px */
     .content-poster.tv-logo i{font-size:1.5rem!important}
     header{padding:calc(var(--spacing-base) * 3) calc(var(--spacing-base) * 4)} /* 15px 20px */
-    /* nav ul li marjı yukarıda mobil menü içinde sıfırlandı */
     nav ul li a:focus{outline:var(--outline-width) solid var( --primary);outline-offset:var(--outline-offset)}
     .hero{padding:0 calc(var(--spacing-base) * 4);height:85vh} /* 20px */
     .hero-title{font-size:calc(var(--font-base) * 2)} /* 2rem */
@@ -277,7 +279,6 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
     .search-stats{gap:calc(var(--spacing-base) * 4)} /* 20px */
     .stat-item i{font-size:1.5rem}
 }
-
 /* ===  responsive (Küçük Mobil) === */
 @media (max-width: 480px){
     .content-item{min-width:150px}
@@ -288,7 +289,6 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
     .content-poster.tv-logo{padding:calc(var(--spacing-base) * 2)!important} /* 10px */
     .content-poster.tv-logo i{font-size:1.2rem!important}
     .hero-buttons{flex-direction:column;width:100%}
-    /* header ve nav ul kuralları mobil menü için kaldırıldı */
     .logo{font-size:20px}
     .hero-title{font-size:1.5rem}
     .hero-description{font-size:1rem}
@@ -302,30 +302,10 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 }
 
 /* TV mode specific */
-body.tv-mode {
-  cursor: none !important;
-  overflow: hidden;
-}
-
-body.tv-mode * {
-  pointer-events: none;
-  user-select: none;
-}
-
-body.tv-mode .nav-btn,
-body.tv-mode .quick-btn,
-body.tv-mode .content-item,
-body.tv-mode button,
-body.tv-mode input {
-  pointer-events: auto;
-}
-
-body.tv-mode :focus-visible {
-  outline: 3px solid #00bfff;
-  transform: scale(1.05);
-  transition: transform 0.1s ease;
-}
-
+body.tv-mode {cursor: none !important;overflow: hidden;}
+body.tv-mode * {pointer-events: none;user-select: none;}
+body.tv-mode .nav-btn,body.tv-mode .quick-btn,body.tv-mode .content-item,body.tv-mode button,body.tv-mode input {pointer-events: auto;}
+body.tv-mode :focus-visible {outline: 3px solid #00bfff;transform: scale(1.05);transition: transform 0.1s ease;}
 
 .flex {display: flex;}
 .hidden {display: none;}
