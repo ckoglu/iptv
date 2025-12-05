@@ -28,7 +28,6 @@
    --dark-alpha-90: rgba(20, 20, 20, .9);
    --dark-alpha-60: rgba(20, 20, 20, .6);
    --dark-alpha-30: rgba(20, 20, 20, .3);
-
   --font-base: 1rem;       /* 16px */
   --spacing-base: 5px;     /* Temel boşluk (margin, padding, gap) */
   --radius-base: 8px;      /* Temel köşe yarıçapı */
@@ -58,9 +57,9 @@ nav ul li a:hover{color:var( --text-main);background-color:var( --bg-light);tran
 nav ul li a.active{color:var( --text-main);background-color:var( --primary);font-weight:700}
 nav ul li a.active:hover{background-color:var( --primary-hover)}
 @media (max-width:768px){
-header nav ul{gap:calc(var(--spacing-base) * 3)}
-header nav ul li a{font-size:1.15rem;padding:calc(var(--spacing-base) * 3) calc(var(--spacing-base) * 4);width:100%;justify-content:flex-start}
-header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
+   header nav ul{gap:calc(var(--spacing-base) * 3)}
+   header nav ul li a{font-size:1.15rem;padding:calc(var(--spacing-base) * 3) calc(var(--spacing-base) * 4);width:100%;justify-content:flex-start}
+   header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 }
 .user-actions{display:flex;align-items:center; gap: calc(var(--spacing-base) * 2);}
 .search-icon{cursor:pointer;font-size:calc(var(--font-base) * 1.125);color:var( --text-main);transition:color var(--transition-time)} /* 18px */
@@ -88,9 +87,9 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 .card-title{font-size:calc(var(--font-base) * 1.25);font-weight:700;color:var( --text-main)}
 
 @media (max-width:768px){
-.quick-links-section{padding:0;margin-top:0}
-.quick-links-grid{grid-template-columns:repeat(2,1fr);gap:calc(var(--spacing-base) * 3)}
-.quick-link-card:hover{transform:translateY(calc(var(--spacing-base) * -2));box-shadow:0 10px 15px var( --black-alpha-50)}
+   .quick-links-section{padding:0;margin-top:0}
+   .quick-links-grid{grid-template-columns:repeat(2,1fr);gap:calc(var(--spacing-base) * 3)}
+   .quick-link-card:hover{transform:translateY(calc(var(--spacing-base) * -2));box-shadow:0 10px 15px var( --black-alpha-50)}
 }
 
 /* === Button Styles === */
@@ -220,10 +219,6 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 #video-element{width:100%;height:auto}
 .close-player{position:absolute;top:calc(var(--spacing-base) * -8);right:0;background:0 0;border:none;color:var( --text-main);font-size:24px;cursor:pointer} /* -40px */
 
-/* === Animations === */
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-
 /* === Mobil Menü Stilleri === */
 .header-right-group {display: flex;align-items: center;gap: calc(var(--spacing-base) * 2); /* 10px */}
 .mobile-menu-toggle,.mobile-menu-close {display: none;background: transparent;border: none;color: var( --text-main);font-size: 1.5rem; /* 24px */cursor: pointer;padding: var(--spacing-base); /* 5px */z-index: var(--z-index-menu-close); /* Menünün üstünde */}
@@ -234,6 +229,10 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
 .netflix-player.mobile .progress-handle{width:20px;height:20px}
 .netflix-player.mobile:-webkit-full-screen .controls-container{padding-bottom:env(safe-area-inset-bottom,20px)}
 .skip-feedback{animation:fadeInOut 1s ease-in-out}
+
+/* === Animations === */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 @keyframes fadeInOut{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.8)}}
 
 /* ===  responsive (Tablet & Mobil) === */
@@ -279,6 +278,7 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
     .search-stats{gap:calc(var(--spacing-base) * 4)} /* 20px */
     .stat-item i{font-size:1.5rem}
 }
+
 /* ===  responsive (Küçük Mobil) === */
 @media (max-width: 480px){
     .content-item{min-width:150px}
@@ -293,7 +293,7 @@ header nav ul li a:hover{transform:none;background-color:var( --bg-light-hover)}
     .hero-title{font-size:1.5rem}
     .hero-description{font-size:1rem}
     .btn{padding:calc(var(--spacing-base) * 2) calc(var(--spacing-base) * 4);font-size:.9rem} /* 10px 20px */
-    .content-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:calc(var(--spacing-base) * 2)} /* 10px */
+    .content-grid{gap:calc(var(--spacing-base) * 2)} /* 10px */
     .search-results{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:calc(var(--spacing-base) * 2)} /* 10px */
     .search-hero{height:50vh}
     .stats-grid{grid-template-columns:1fr;gap:calc(var(--spacing-base) * 2)} /* 10px */
