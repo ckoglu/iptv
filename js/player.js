@@ -215,32 +215,129 @@ class NetflixPlayer {
         const urlParams = new URLSearchParams(window.location.search);
         const videoUrl = urlParams.get('url');
         const videoTitle = urlParams.get('title') || 'Video';
-        
-        // Başlık ayarla
-        this.videoTitle.textContent = videoTitle;
-        document.title = `${videoTitle} - IPTV Player`;
-        
+    
+        if (videoTitle) {
+            this.videoTitle.textContent = videoTitle;
+            document.title = `${videoTitle} - IPTV Player`;
+        }
+    
         if (!videoUrl) {
             this.showError('Video URL bulunamadı.');
             return;
         }
-        
+    
         this.showLoading();
-        
-        // URL'yi temizle ve kontrol et
-        const cleanVideoUrl = this.cleanVideoUrl(videoUrl);
-        
-        // Format kontrolü - MP4 için özel işlem
-        const urlLower = cleanVideoUrl.toLowerCase();
+    
+        // HLS kontrolü (BASİT)
+        const urlLower = videoUrl.toLowerCase();
         this.isHLS = urlLower.includes('.m3u8') || 
-                     urlLower.includes('.m3u') || 
-                     urlLower.includes('/hls/') ||
-                     urlLower.includes('master.m3u8');
-        
+                    urlLower.includes('/hls/');
+    
         if (this.isHLS) {
-            this.setupHLSVideo(cleanVideoUrl);
+            this.setupHLSVideo(videoUrl);
         } else {
-            this.setupDirectVideo(cleanVideoUrl);
+            // MP4 ve diğer formatlar için BASİT yöntem
+            this.setupSimpleVideo(videoUrl);
+        }
+    }
+
+    setupSimpleVideo(videoUrl) {
+        console.log("Setting up simple video:", videoUrl);
+        
+        // Video elementini temizle
+        this.videoElement.src = '';
+        this.videoElement.load();
+        
+        // Video elementine direkt URL'yi ata
+        this.videoElement.src = videoUrl;
+        
+        // Gerekli attribute'ları ekle
+        this.videoElement.setAttribute('preload', 'auto');
+        this.videoElement.setAttribute('playsinline', '');
+        this.videoElement.setAttribute('webkit-playsinline', '');
+        
+        // Event listener'ları ekle
+        const handleLoaded = () => {
+            console.log("Video loaded successfully");
+            this.hideLoading();
+            
+            // Video hazır olduğunda oynatmayı dene
+            this.videoElement.play().catch(e => {
+                console.log("Auto-play blocked, showing controls");
+                this.showControls();
+            });
+        };
+        
+        const handleError = (e) => {
+            console.error("Video error:", e);
+            this.handleSimpleVideoError(videoUrl);
+        };
+        
+        const handleCanPlay = () => {
+            console.log("Video can play");
+            this.hideLoading();
+        };
+        
+        // Event listener'ları ekle (sadece bir kere)
+        this.videoElement.addEventListener('loadeddata', handleLoaded, { once: true });
+        this.videoElement.addEventListener('canplay', handleCanPlay, { once: true });
+        this.videoElement.addEventListener('error', handleError, { once: true });
+        
+        // Video'yu yükle
+        this.videoElement.load();
+    }
+
+    setupHLSVideo(videoUrl) {
+        if (typeof Hls === 'undefined') {
+            this.showError('HLS desteği yüklenemedi.');
+            return;
+        }
+    
+        if (Hls.isSupported()) {
+            try {
+                if (this.hls) {
+                    this.hls.destroy();
+                }
+                
+                this.hls = new Hls({
+                    enableWorker: false, // TV'lerde worker sorun çıkarabilir
+                    lowLatencyMode: false // Basit mod
+                });
+                
+                this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    this.hideLoading();
+                    this.videoElement.play().catch(e => {
+                        console.log("HLS auto-play blocked");
+                        this.showControls();
+                    });
+                });
+                
+                this.hls.on(Hls.Events.ERROR, (event, data) => {
+                    console.error('HLS Error:', data);
+                    if (data.fatal) {
+                        this.showError('HLS video yüklenemedi.');
+                    }
+                });
+                
+                this.hls.loadSource(videoUrl);
+                this.hls.attachMedia(this.videoElement);
+            } catch (error) {
+                console.error('HLS Error:', error);
+                this.showError('HLS oynatıcı başlatılamadı.');
+            }
+        } else if (this.videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+            // Safari için native HLS
+            this.videoElement.src = videoUrl;
+            this.videoElement.addEventListener('loadeddata', () => {
+                this.hideLoading();
+                this.videoElement.play().catch(console.log);
+            }, { once: true });
+            this.videoElement.addEventListener('error', () => {
+                this.showError('HLS video yüklenemedi.');
+            }, { once: true });
+            this.videoElement.load();
+        } else {
+            this.showError('Tarayıcınız HLS formatını desteklemiyor.');
         }
     }
 
@@ -1585,4 +1682,5 @@ window.debugPlayer = function() {
     console.log('- Video currentTime:', window.netflixPlayer.videoElement.currentTime);
     console.log('- Video duration:', window.netflixPlayer.videoElement.duration);
 };
+
 
