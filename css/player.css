@@ -45,17 +45,17 @@
 .control-btn{width:35px;height:35px}
 }
 
-/* TV Player için ek stiller */
+/* TV Player modu */
 .tv-mode .netflix-player {
     cursor: none !important;
 }
 
-.tv-mode .player-controls-top,
-.tv-mode .player-controls-center,
-.tv-mode .player-controls-bottom {
-    transition: opacity 0.3s ease;
+.tv-player .player-controls-top,
+.tv-player .player-controls-center,
+.tv-player .player-controls-bottom {
     opacity: 1 !important;
     visibility: visible !important;
+    transition: opacity 0.3s ease;
 }
 
 .tv-player .player-controls-center {
@@ -70,7 +70,7 @@
     width: 80px;
     height: 80px;
     font-size: 36px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     border: 3px solid white;
     border-radius: 50%;
     display: flex;
@@ -79,15 +79,17 @@
 }
 
 .tv-player .play-pause-btn i {
-    margin-left: 5px; /* Play ikonunu ortalamak için */
+    margin-left: 5px;
 }
 
 .tv-player .control-btn {
     width: 60px;
     height: 60px;
     font-size: 24px;
-    margin: 0 10px;
+    margin: 0 15px;
     border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -98,6 +100,8 @@
     height: 60px;
     font-size: 28px;
     border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -112,14 +116,15 @@
 
 /* TV için büyük progress bar */
 .tv-player .progress-container {
-    height: 10px;
-    margin: 20px 0;
+    height: 12px;
+    margin: 25px 0;
 }
 
 .tv-player .progress-bar {
     height: 8px;
     background: rgba(255, 255, 255, 0.3);
     border-radius: 4px;
+    cursor: pointer;
 }
 
 .tv-player .progress-fill {
@@ -129,44 +134,52 @@
 }
 
 .tv-player .progress-handle {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     background: #e50914;
     border-radius: 50%;
     border: 3px solid white;
-    top: -6px;
+    top: -7px;
+    cursor: pointer;
 }
 
 .tv-player .time-display {
-    font-size: 18px;
-    margin-top: 10px;
+    font-size: 20px;
+    margin-top: 12px;
     font-weight: bold;
+    display: flex;
+    justify-content: space-between;
 }
 
-/* TV OSD (On Screen Display) */
+/* TV için kontrol butonları container */
+.tv-player .control-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 25px;
+}
+
+/* TV OSD */
 .tv-osd {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     color: white;
     padding: 25px 50px;
     border-radius: 15px;
     font-size: 28px;
     font-weight: bold;
     z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 250px;
     text-align: center;
+    min-width: 250px;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
     border: 2px solid rgba(255, 255, 255, 0.3);
-    animation: tvOSDFadeIn 0.2s ease;
+    animation: tvOsdFade 0.2s ease;
 }
 
-@keyframes tvOSDFadeIn {
+@keyframes tvOsdFade {
     from {
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.9);
@@ -177,23 +190,16 @@
     }
 }
 
-/* TV için kontrol butonları container'ı */
-.tv-player .control-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-top: 20px;
-}
-
 /* TV için yükleme göstergesi */
 .tv-player .loading-overlay {
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
 }
 
 .tv-player .loading-spinner {
     width: 80px;
     height: 80px;
     border-width: 6px;
+    border-color: #e50914 transparent transparent transparent;
 }
 
 .tv-player .loading-text {
@@ -203,20 +209,21 @@
 
 /* TV için hata mesajı */
 .tv-player .error-overlay {
-    background: rgba(0, 0, 0, 0.95);
+    background: rgba(0, 0, 0, 0.97);
 }
 
 .tv-player .error-overlay i {
-    font-size: 60px;
-    margin-bottom: 20px;
+    font-size: 64px;
+    margin-bottom: 25px;
+    color: #e50914;
 }
 
 .tv-player .error-text {
     font-size: 22px;
-    margin-bottom: 30px;
+    margin-bottom: 35px;
     text-align: center;
     max-width: 80%;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 .tv-player .error-buttons {
@@ -226,14 +233,72 @@
 
 .tv-player .retry-btn,
 .tv-player .back-btn {
-    padding: 15px 30px;
+    padding: 18px 35px;
     font-size: 20px;
     border-radius: 8px;
-    min-width: 150px;
+    min-width: 160px;
+    background: #e50914;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
 }
 
-/* TV için ses kontrolü */
-.tv-player .volume-control {
+.tv-player .retry-btn:hover,
+.tv-player .back-btn:hover {
+    background: #f40612;
+}
+
+/* TV için tam ekran optimize */
+.tv-player:-webkit-full-screen {
+    width: 100% !important;
+    height: 100% !important;
+    background: #000;
+}
+
+.tv-player:-moz-full-screen {
+    width: 100% !important;
+    height: 100% !important;
+    background: #000;
+}
+
+.tv-player:-ms-fullscreen {
+    width: 100% !important;
+    height: 100% !important;
+    background: #000;
+}
+
+.tv-player:fullscreen {
+    width: 100% !important;
+    height: 100% !important;
+    background: #000;
+}
+
+/* TV için buton focus stil */
+.tv-player button:focus {
+    outline: 3px solid #e50914 !important;
+    outline-offset: 4px !important;
+    transform: scale(1.1);
+    transition: transform 0.2s;
+}
+
+/* TV için video element */
+.tv-player .netflix-video {
+    cursor: none;
+}
+
+/* Kontroller gizli modu */
+.controls-hidden .player-controls-top,
+.controls-hidden .player-controls-center,
+.controls-hidden .player-controls-bottom {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Ses kontrolü */
+.volume-control {
     position: absolute;
     bottom: 100px;
     right: 50px;
@@ -243,65 +308,37 @@
     transform: rotate(-90deg);
     transform-origin: bottom right;
     width: 150px;
+    display: none;
 }
 
-.tv-player .volume-slider {
+.volume-control.show {
+    display: block;
+}
+
+.volume-slider {
     width: 100%;
-    height: 10px;
+    height: 8px;
     -webkit-appearance: none;
     background: rgba(255, 255, 255, 0.3);
-    border-radius: 5px;
+    border-radius: 4px;
+    outline: none;
 }
 
-.tv-player .volume-slider::-webkit-slider-thumb {
+.volume-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: #e50914;
     cursor: pointer;
+    border: 2px solid white;
 }
 
-/* TV için büyük buton hover efekti */
-.tv-player button:focus {
-    outline: 3px solid #e50914 !important;
-    outline-offset: 3px !important;
-    transform: scale(1.1);
-    transition: transform 0.2s;
+.volume-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e50914;
+    cursor: pointer;
+    border: 2px solid white;
 }
-
-/* TV için menüler */
-.tv-player .video-quality,
-.tv-player .subtitles-menu,
-.tv-player .settings-menu,
-.tv-player .playback-speed-menu {
-    font-size: 20px;
-    min-width: 200px;
-}
-
-.tv-player .video-quality button,
-.tv-player .subtitles-menu button,
-.tv-player .settings-menu button,
-.tv-player .playback-speed-menu button {
-    padding: 15px 20px;
-    font-size: 18px;
-    text-align: left;
-}
-
-/* TV için tam ekran optimize */
-.tv-player:-webkit-full-screen {
-    background: #000;
-}
-
-.tv-player:-moz-full-screen {
-    background: #000;
-}
-
-.tv-player:-ms-fullscreen {
-    background: #000;
-}
-
-.tv-player:fullscreen {
-    background: #000;
-}
-
