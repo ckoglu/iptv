@@ -301,11 +301,11 @@ nav ul li a.active:hover{background-color:var( --primary-hover)}
     .results-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:calc(var(--spacing-base) * 2)} /* 10px */
 }
 
-/* TV mode specific */
-body.tv-mode {cursor: none !important;overflow: hidden;}
-body.tv-mode * {pointer-events: none;user-select: none;}
-body.tv-mode .nav-btn,body.tv-mode .quick-btn,body.tv-mode .content-item,body.tv-mode button,body.tv-mode input {pointer-events: auto;}
-body.tv-mode :focus-visible {outline: 3px solid #00bfff;transform: scale(1.05);transition: transform 0.1s ease;}
+/* TV'ler için genel stiller */
+.tv-mode {-webkit-font-smoothing: antialiased;font-size: 24px;}
+.tv-mode button,.tv-mode a {min-height: 60px;min-width: 120px;padding: 15px 25px;}
+.tv-mode input {font-size: 24px;height: 60px;padding: 15px;}
+.tv-mode ::-webkit-scrollbar {display: none;}
 
 .flex {display: flex;}
 .hidden {display: none;}
