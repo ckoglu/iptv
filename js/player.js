@@ -1,6 +1,7 @@
-// player.js
+// player.js - Tam ve eksiksiz TV kumandası desteği ile video player
 class NetflixPlayer {
     constructor() {
+        // Video elementleri
         this.videoElement = document.getElementById('videoElement');
         this.playPauseBtn = document.getElementById('playPauseBtn');
         this.progressBar = document.getElementById('progressBar');
@@ -19,6 +20,8 @@ class NetflixPlayer {
         this.errorText = document.getElementById('errorText');
         this.videoTitle = document.getElementById('videoTitle');
         this.netflixPlayer = document.getElementById('netflixPlayer');
+        
+        // Ayarlar butonları (eğer varsa)
         this.videoQuality = document.getElementById('videoQuality');
         this.subtitlesBtn = document.getElementById('subtitlesBtn');
         this.subtitlesMenu = document.getElementById('subtitlesMenu');
@@ -26,62 +29,100 @@ class NetflixPlayer {
         this.settingsMenu = document.getElementById('settingsMenu');
         this.playbackSpeedBtn = document.getElementById('playbackSpeedBtn');
         this.playbackSpeedMenu = document.getElementById('playbackSpeedMenu');
+        this.pipBtn = document.getElementById('pipBtn');
         
+        // Durum değişkenleri
         this.isPlaying = false;
         this.isFullscreen = false;
-        this.isControlsVisible = true;
-        this.hideControlsTimeout = null;
+        this.isTV = false;
         this.isMobile = this.detectMobile();
         this.isHLS = false;
         this.hls = null;
+        this.lastKeyPressTime = 0;
+        this.controlsVisible = true;
+        this.controlsTimeout = null;
+        this.isScrubbing = false;
+        this.currentVolume = 1;
         this.qualities = [];
         this.subtitles = [];
         this.playbackSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
         this.currentPlaybackSpeed = 1;
-        this.isScrubbing = false;
         this.isPiP = false;
         
+        // Başlat
         this.init();
     }
-
-    // Daha kesin mobil tespiti
-    detectMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 768 && /Mobile|Tablet/i.test(navigator.userAgent));
-    }
-
+    
+    // Başlatma
     init() {
-        // Mobil cihaz kontrolü
-        if (this.isMobile) {
-            this.netflixPlayer.classList.add('mobile');
-            // Mobil cihazlarda bazı özellikleri devre dışı bırak
-            this.setupMobileSpecificFeatures();
-        }
+        // TV algıla
+        this.detectTVMode();
         
+        // Video yükle
         this.loadVideo();
+        
+        // Event listener'ları kur
         this.setupEventListeners();
-        this.setupControlsAutoHide();
+        
+        // Kontrolleri ayarla
+        this.setupControls();
+        
+        // Oynatma hızı menüsü
         this.setupPlaybackSpeedMenu();
+        
+        // TV için özel ayarlar
+        if (this.isTV) {
+            this.setupTVMode();
+        }
+        
+        // Mobil için özel ayarlar
+        if (this.isMobile) {
+            this.setupMobileFeatures();
+        }
     }
-
-    setupMobileSpecificFeatures() {
-        // Mobil cihazlarda Picture-in-Picture'ı gizle (desteklenmiyorsa)
-        const pipButton = document.getElementById('pipBtn');
-        if (pipButton && !document.pictureInPictureEnabled) {
-            pipButton.style.display = 'none';
+    
+    // TV algılama
+    detectTVMode() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        this.isTV = userAgent.includes("tizen") ||
+                   userAgent.includes("webos") ||
+                   userAgent.includes("smart-tv") ||
+                   userAgent.includes("smarttv") ||
+                   userAgent.includes("netcast") ||
+                   userAgent.includes("appletv") ||
+                   userAgent.includes("android tv") ||
+                   userAgent.includes("crkey") ||
+                   userAgent.includes("xbox") ||
+                   /tv/ui.test(userAgent);
+        
+        if (this.isTV) {
+            document.body.classList.add('tv-mode');
+            document.body.style.cursor = 'none';
+            console.log("TV MODE: Video player aktif");
+        }
+    }
+    
+    // Mobil algılama
+    detectMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+               (window.innerWidth <= 768 && /Mobile|Tablet/i.test(navigator.userAgent));
+    }
+    
+    // Mobil özellikler
+    setupMobileFeatures() {
+        this.netflixPlayer.classList.add('mobile');
+        
+        // PiP butonunu kontrol et
+        if (this.pipBtn && !document.pictureInPictureEnabled) {
+            this.pipBtn.style.display = 'none';
         }
         
-        // Mobil cihazlarda bazı ayar butonlarını gizle
-        if (this.settingsBtn) {
-            this.settingsBtn.style.display = 'none';
-        }
-        
-        // Mobil için özel dokunmatik olaylar
+        // Mobil dokunmatik kontroller
         this.setupMobileTouchEvents();
     }
-
+    
+    // Mobil dokunmatik kontroller
     setupMobileTouchEvents() {
-        if (!this.isMobile) return;
-        
         let lastTap = 0;
         let touchStartX = 0;
         let touchStartY = 0;
@@ -93,20 +134,17 @@ class NetflixPlayer {
             const tapLength = currentTime - lastTap;
             
             if (tapLength < 300 && tapLength > 0) {
-                // Çift tıklama - oynat/duraklat
                 e.preventDefault();
                 this.togglePlay();
             }
             
             lastTap = currentTime;
-            
-            // Kaydırma için başlangıç pozisyonunu kaydet
             touchStartX = e.touches[0].clientX;
             touchStartY = e.touches[0].clientY;
             touchStartTime = currentTime;
         });
         
-        // Yatay kaydırma için
+        // Kaydırma için
         this.netflixPlayer.addEventListener('touchmove', (e) => {
             if (e.touches.length !== 1) return;
             
@@ -115,18 +153,12 @@ class NetflixPlayer {
             const diffX = touchX - touchStartX;
             const diffY = touchY - touchStartY;
             
-            // Yatay kaydırma (ileri/geri alma)
-            if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
                 e.preventDefault();
-                
-                if (Math.abs(diffX) > 50) { // Eşik değeri
-                    const timeChange = diffX > 0 ? 10 : -10;
-                    this.videoElement.currentTime += timeChange;
-                    touchStartX = touchX;
-                    
-                    // Geri alma/ileri sarma göstergesi
-                    this.showSkipFeedback(timeChange);
-                }
+                const timeChange = diffX > 0 ? 10 : -10;
+                this.videoElement.currentTime += timeChange;
+                touchStartX = touchX;
+                this.showSkipFeedback(timeChange);
             }
         });
         
@@ -139,15 +171,14 @@ class NetflixPlayer {
             const diffX = Math.abs(touchX - touchStartX);
             const diffY = Math.abs(touchY - touchStartY);
             
-            // Kısa dokunma ve kaydırma yoksa (kontrolleri değiştir)
             if (touchDuration < 300 && diffX < 10 && diffY < 10) {
                 this.toggleControls();
             }
         });
     }
     
+    // Skip feedback göster
     showSkipFeedback(seconds) {
-        // Geçici olarak geri alma/ileri sarma göstergesi göster
         const feedback = document.createElement('div');
         feedback.className = 'skip-feedback';
         feedback.innerHTML = `
@@ -178,124 +209,61 @@ class NetflixPlayer {
             }
         }, 1000);
     }
-
+    
+    // Video yükleme
     loadVideo() {
         const urlParams = new URLSearchParams(window.location.search);
         const videoUrl = urlParams.get('url');
-        const videoTitle = urlParams.get('title');
-
-        if (videoTitle) {
-            this.videoTitle.textContent = videoTitle;
-            document.title = `${videoTitle} - IPTV Player`;
-        }
-
+        const videoTitle = urlParams.get('title') || 'Video';
+        
+        // Başlık ayarla
+        this.videoTitle.textContent = videoTitle;
+        document.title = `${videoTitle} - IPTV Player`;
+        
         if (!videoUrl) {
             this.showError('Video URL bulunamadı.');
             return;
         }
-
+        
         this.showLoading();
-
-        // URL uzantısına göre format belirleme
+        
+        // HLS kontrolü
         const urlLower = videoUrl.toLowerCase();
         this.isHLS = urlLower.includes('.m3u8') || 
-                    urlLower.includes('.m3u') || 
-                    urlLower.includes('/hls/') ||
-                    urlLower.includes('m3u8') ||
-                    urlLower.includes('hls');
+                     urlLower.includes('.m3u') || 
+                     urlLower.includes('/hls/') ||
+                     urlLower.includes('master.m3u8');
+        
         if (this.isHLS) {
-            // HLS video (m3u8)
             this.setupHLSVideo(videoUrl);
         } else {
-            // Direkt video (MP4, WebM, etc.)
             this.setupDirectVideo(videoUrl);
         }
     }
-
+    
+    // HLS video kurulumu
     setupHLSVideo(videoUrl) {
-        // HLS.js kütüphanesinin yüklü olup olmadığını kontrol et
         if (typeof Hls === 'undefined') {
-            this.showError('HLS desteği yüklenemedi. Lütfen sayfayı yenileyin.');
+            this.showError('HLS desteği yüklenemedi.');
             return;
         }
-
-        // HLS desteği kontrolü
+        
         if (Hls.isSupported()) {
             this.setupHlsJS(videoUrl);
         } else if (this.videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-            // Safari için native HLS desteği
             this.setupNativeHLS(videoUrl);
         } else {
-            this.showError('Tarayıcınız HLS formatını desteklemiyor. Lütfen Chrome, Firefox veya Edge kullanın.');
+            this.showError('Tarayıcınız HLS formatını desteklemiyor.');
         }
     }
-
-    setupDirectVideo(videoUrl) {
-        // Video elementini temizle
-        this.videoElement.src = '';
-        this.videoElement.load();
-        
-        // Yeni kaynağı ayarla
-        this.videoElement.src = videoUrl;
-        
-        // Video type'ı ayarla (daha iyi uyumluluk için)
-        const sourceElement = document.createElement('source');
-        sourceElement.src = videoUrl;
-        
-        // Formatı tahmin etmeye çalış
-        if (videoUrl.toLowerCase().includes('.mp4')) {
-            sourceElement.type = 'video/mp4';
-        } else if (videoUrl.toLowerCase().includes('.webm')) {
-            sourceElement.type = 'video/webm';
-        } else if (videoUrl.toLowerCase().includes('.ogg')) {
-            sourceElement.type = 'video/ogg';
-        }
-        
-        // Eski source'ları temizle ve yenisini ekle
-        this.videoElement.innerHTML = '';
-        this.videoElement.appendChild(sourceElement);
-        
-        // Video element event listeners
-        const onLoadedData = () => {
-            this.hideLoading();
-            this.videoElement.play().catch(e => {
-                this.hideLoading();
-                // Kullanıcı etkileşimi bekliyoruz
-                this.showControls();
-            });
-        };
-        
-        const onCanPlay = () => {
-            this.hideLoading();
-        };
-        
-        const onError = (e) => {
-            this.handlePlayerError();
-        };
-        
-        // Event listener'ları ekle
-        this.videoElement.addEventListener('loadeddata', onLoadedData, { once: true });
-        this.videoElement.addEventListener('canplay', onCanPlay, { once: true });
-        this.videoElement.addEventListener('error', onError, { once: true });
-        
-        // Quality selector'ı gizle (direct video için gerek yok)
-        if (this.videoQuality) {
-            this.videoQuality.style.display = 'none';
-        }
-        
-        // Video'yu yükle
-        this.videoElement.load();
-    }
-
+    
+    // Hls.js kurulumu
     setupHlsJS(videoUrl) {
         try {
-            // Eski HLS instance'ını temizle
             if (this.hls) {
                 this.hls.destroy();
-                this.hls = null;
             }
             
-            // Yeni HLS instance oluştur
             this.hls = new Hls({
                 enableWorker: true,
                 lowLatencyMode: true,
@@ -307,104 +275,51 @@ class NetflixPlayer {
                 liveMaxLatencyDurationCount: 10,
                 fragLoadingTimeOut: 20000,
                 manifestLoadingTimeOut: 30000,
-                levelLoadingTimeOut: 30000,
-                xhrSetup: (xhr, url) => {
-                    // CORS sorunlarını önlemek için
-                    xhr.withCredentials = false;
-                }
+                levelLoadingTimeOut: 30000
             });
             
-            // HLS event listener'ları
             this.hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
                 this.hideLoading();
-                
-                // Quality seviyelerini al
                 this.qualities = data.levels || [];
                 this.setupQualitySelector();
                 
-                // Video'yu oynat
                 this.videoElement.play().catch(e => {
-                    this.hideLoading();
+                    console.log("Auto-play blocked");
                     this.showControls();
                 });
             });
-
-            this.hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
+            
+            this.hls.on(Hls.Events.LEVEL_LOADED, () => {
                 this.hideLoading();
             });
-
-            this.hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-            });
-
-            this.hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
-                // Fragment yüklendiğinde loading'i gizle
-                this.hideLoading();
-            });
-
+            
             this.hls.on(Hls.Events.ERROR, (event, data) => {
-                console.error('HLS Error event:', data);
+                console.error('HLS Error:', data);
                 
                 if (data.fatal) {
                     switch(data.type) {
                         case Hls.ErrorTypes.NETWORK_ERROR:
-                            console.error('HLS Network Error');
                             this.hls.startLoad();
                             break;
                         case Hls.ErrorTypes.MEDIA_ERROR:
-                            console.error('HLS Media Error');
                             this.hls.recoverMediaError();
                             break;
                         default:
-                            console.error('HLS Fatal Error');
                             this.handleFatalError(data);
                             break;
                     }
                 }
             });
-
-            // HLS'yi video elementine bağla
+            
             this.hls.loadSource(videoUrl);
             this.hls.attachMedia(this.videoElement);
         } catch (error) {
-            console.error('Hls.js setup error:', error);
-            this.showError('HLS oynatıcı başlatılamadı: ' + error.message);
+            console.error('HLS Error:', error);
+            this.showError('HLS oynatıcı başlatılamadı.');
         }
     }
-
-    setupNativeHLS(videoUrl) {
-        // Video elementini temizle
-        this.videoElement.src = '';
-        this.videoElement.load();
-        
-        // Safari için native HLS
-        this.videoElement.src = videoUrl;
-        
-        const onLoadedData = () => {
-            this.hideLoading();
-            this.videoElement.play().catch(e => {
-                this.hideLoading();
-                this.showControls();
-            });
-        };
-        
-        const onCanPlay = () => {
-            this.hideLoading();
-        };
-        
-        const onError = (e) => {
-            console.error('Native HLS error:', e);
-            this.handlePlayerError();
-        };
-        
-        // Event listener'ları ekle
-        this.videoElement.addEventListener('loadeddata', onLoadedData, { once: true });
-        this.videoElement.addEventListener('canplay', onCanPlay, { once: true });
-        this.videoElement.addEventListener('error', onError, { once: true });
-        
-        // Video'yu yükle
-        this.videoElement.load();
-    }
-
+    
+    // Kalite seçici
     setupQualitySelector() {
         if (!this.videoQuality || !this.qualities || this.qualities.length <= 1) {
             if (this.videoQuality) {
@@ -412,16 +327,14 @@ class NetflixPlayer {
             }
             return;
         }
+        
         this.videoQuality.style.display = 'block';
         this.videoQuality.innerHTML = '';
         
-        // Mevcut quality'yi bul
-        const currentLevel = this.hls ? this.hls.currentLevel : -1;
-        
-        // Auto seçeneği (ilk sırada)
+        // Auto seçeneği
         const autoButton = document.createElement('button');
         autoButton.textContent = 'Otomatik';
-        autoButton.className = currentLevel === -1 ? 'active' : '';
+        autoButton.className = this.hls.currentLevel === -1 ? 'active' : '';
         autoButton.addEventListener('click', () => {
             if (this.hls) {
                 this.hls.currentLevel = -1;
@@ -430,66 +343,52 @@ class NetflixPlayer {
             autoButton.classList.add('active');
         });
         this.videoQuality.appendChild(autoButton);
-
-        // Tüm quality seçeneklerini ekle
+        
+        // Kalite seçenekleri
         this.qualities.forEach((level, index) => {
             const button = document.createElement('button');
             const height = level.height || 'N/A';
             const bitrate = level.bitrate ? Math.round(level.bitrate / 1000) + 'kbps' : 'Auto';
             button.textContent = `${height}p`;
-            button.title = `${bitrate}`;
-            button.className = index === currentLevel ? 'active' : '';
+            button.title = bitrate;
+            button.className = index === this.hls.currentLevel ? 'active' : '';
             button.addEventListener('click', () => {
                 if (this.hls) {
                     this.hls.currentLevel = index;
                 }
-                // Aktif butonu güncelle
                 this.videoQuality.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
             });
             this.videoQuality.appendChild(button);
         });
     }
-
-    setupSubtitlesSelector() {
-        if (!this.subtitlesBtn || !this.subtitles || this.subtitles.length === 0) {
-            if (this.subtitlesBtn) {
-                this.subtitlesBtn.style.display = 'none';
-            }
-            return;
-        }
-
-        this.subtitlesBtn.style.display = 'block';
-        this.subtitlesMenu.innerHTML = '';
-        
-        // Subtitle kapalı seçeneği
-        const offButton = document.createElement('button');
-        offButton.textContent = 'Kapalı';
-        offButton.addEventListener('click', () => {
-            if (this.hls) {
-                this.hls.subtitleTrack = -1;
-            }
-            this.subtitlesMenu.style.display = 'none';
-        });
-        this.subtitlesMenu.appendChild(offButton);
-
-        // Subtitle seçenekleri
-        this.subtitles.forEach((track, index) => {
-            const button = document.createElement('button');
-            button.textContent = track.name || `Altyazı ${index + 1}`;
-            button.addEventListener('click', () => {
-                if (this.hls) {
-                    this.hls.subtitleTrack = index;
-                }
-                this.subtitlesMenu.style.display = 'none';
-            });
-            this.subtitlesMenu.appendChild(button);
-        });
+    
+    // Native HLS (Safari)
+    setupNativeHLS(videoUrl) {
+        this.videoElement.src = videoUrl;
+        this.videoElement.addEventListener('loadeddata', () => {
+            this.hideLoading();
+            this.videoElement.play().catch(console.log);
+        }, { once: true });
+        this.videoElement.addEventListener('error', () => this.handlePlayerError(), { once: true });
+        this.videoElement.load();
     }
-
+    
+    // Direkt video
+    setupDirectVideo(videoUrl) {
+        this.videoElement.src = videoUrl;
+        this.videoElement.addEventListener('loadeddata', () => {
+            this.hideLoading();
+            this.videoElement.play().catch(console.log);
+        }, { once: true });
+        this.videoElement.addEventListener('error', () => this.handlePlayerError(), { once: true });
+        this.videoElement.load();
+    }
+    
+    // Oynatma hızı menüsü
     setupPlaybackSpeedMenu() {
         if (!this.playbackSpeedMenu) return;
-
+        
         this.playbackSpeedMenu.innerHTML = '';
         
         this.playbackSpeeds.forEach(speed => {
@@ -502,15 +401,57 @@ class NetflixPlayer {
             this.playbackSpeedMenu.appendChild(button);
         });
     }
-
+    
+    // Oynatma hızı ayarla
     setPlaybackSpeed(speed) {
         this.currentPlaybackSpeed = speed;
         this.videoElement.playbackRate = speed;
         if (this.playbackSpeedBtn) {
             this.playbackSpeedBtn.textContent = speed === 1 ? 'Normal' : speed + 'x';
         }
+        this.showOSD(`Hız: ${speed}x`);
     }
-
+    
+    // TV modu kurulumu
+    setupTVMode() {
+        // TV için kontroller
+        this.netflixPlayer.classList.add('tv-player');
+        
+        // TV tuşlarını kaydet
+        this.registerTVKeys();
+        
+        // TV kontrollerini göster
+        this.showControls();
+        
+        // Kontroller timeout'u başlat
+        this.startControlsTimeout();
+    }
+    
+    // TV tuşlarını kaydet
+    registerTVKeys() {
+        if (typeof tizen !== 'undefined' && tizen.tvinputdevice) {
+            try {
+                const keys = [
+                    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+                    'Enter', 'Return', 'Back', 'Exit',
+                    'MediaPlayPause', 'MediaStop', 'MediaRewind', 'MediaFastForward',
+                    'MediaPause', 'MediaPlay', 'ColorF0Red', 'ColorF1Green'
+                ];
+                
+                keys.forEach(key => {
+                    try {
+                        tizen.tvinputdevice.registerKey(key);
+                    } catch (err) {
+                        console.log("TV key registration skipped:", key);
+                    }
+                });
+            } catch (err) {
+                console.log("Tizen API not available");
+            }
+        }
+    }
+    
+    // Event listener'ları kur
     setupEventListeners() {
         // Video events
         this.videoElement.addEventListener('play', () => this.onPlay());
@@ -519,12 +460,11 @@ class NetflixPlayer {
         this.videoElement.addEventListener('loadedmetadata', () => this.updateDuration());
         this.videoElement.addEventListener('waiting', () => this.showLoading());
         this.videoElement.addEventListener('playing', () => this.hideLoading());
-        this.videoElement.addEventListener('canplay', () => this.hideLoading());
-        this.videoElement.addEventListener('error', () => this.handlePlayerError());
         this.videoElement.addEventListener('volumechange', () => this.updateVolumeIcon());
+        this.videoElement.addEventListener('error', () => this.handlePlayerError());
         this.videoElement.addEventListener('enterpictureinpicture', () => this.onPiPStart());
         this.videoElement.addEventListener('leavepictureinpicture', () => this.onPiPStop());
-
+        
         // Kontrol butonları
         this.playPauseBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -554,63 +494,67 @@ class NetflixPlayer {
             e.stopPropagation();
             this.skip(10);
         });
-
-        // Yeni butonlar
+        
+        // Ek butonlar
         if (this.subtitlesBtn) {
             this.subtitlesBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleSubtitlesMenu();
             });
         }
-
+        
         if (this.settingsBtn) {
             this.settingsBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleSettingsMenu();
             });
         }
-
+        
         if (this.playbackSpeedBtn) {
             this.playbackSpeedBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.togglePlaybackSpeedMenu();
             });
         }
-
+        
+        if (this.pipBtn) {
+            this.pipBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.togglePictureInPicture();
+            });
+        }
+        
         // Klavye kontrolleri
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
         
-        // Fare hareketleri - Tüm player alanında çalışsın
-        this.netflixPlayer.addEventListener('mousemove', () => this.showControlsTemporarily());
-        this.netflixPlayer.addEventListener('mouseleave', () => {
-            if (!this.isFullscreen) {
-                this.startHideControlsTimeout();
-            }
-        });
-        
-        // Dokunmatik kontroller
-        this.netflixPlayer.addEventListener('touchstart', () => this.toggleControls());
-        this.netflixPlayer.addEventListener('touchend', () => this.startHideControlsTimeout());
+        // Mouse/Touch kontrolleri
+        this.setupPointerEvents();
         
         // Fullscreen değişiklikleri
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
-
-        // Video elementine tıklama - oynat/duraklat
-        this.videoElement.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.togglePlay();
+        
+        // Sayfa görünürlüğü
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && this.isPlaying && !this.isPiP) {
+                this.videoElement.pause();
+            }
         });
-
-        // Volume control dışına tıklama
+        
+        // Pencere boyutu değişikliği
+        window.addEventListener('resize', () => this.handleResize());
+        
+        // Progress bar drag
+        this.setupProgressBarDrag();
+        
+        // Menü kapatma
         document.addEventListener('click', (e) => {
             if (this.volumeControl && !this.volumeControl.contains(e.target) && e.target !== this.volumeBtn) {
                 this.volumeControl.style.display = 'none';
             }
             
-            // Menüleri kapat
             if (this.subtitlesMenu && !this.subtitlesMenu.contains(e.target) && e.target !== this.subtitlesBtn) {
                 this.subtitlesMenu.style.display = 'none';
             }
@@ -623,41 +567,33 @@ class NetflixPlayer {
                 this.playbackSpeedMenu.style.display = 'none';
             }
         });
-
-        // Sayfa görünürlüğü değişikliği
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                this.clearHideControlsTimeout();
-                
-                // Sayfa gizlendiğinde sadece PiP değilse sesi kıs
-                if (!this.isPiP) {
-                    // Sesi %10'a düşür (isteğe bağlı, tamamen kapatmak istemiyorsanız)
-                    // this.videoElement.volume = 0.1;
-                    // this.videoElement.muted = true;
-                    
-                    // Veya sadece duraklat (daha iyi çözüm)
-                    if (this.isPlaying) {
-                        this.videoElement.pause();
-                    }
-                }
-            } else {
-                // Sayfa tekrar görünür olduğunda
-                if (this.isPlaying && !this.videoElement.paused) {
-                    this.showControlsTemporarily();
-                }
+    }
+    
+    // Mouse/Touch event'leri
+    setupPointerEvents() {
+        // Mouse hareketinde kontrolleri göster
+        this.netflixPlayer.addEventListener('mousemove', () => {
+            this.showControls();
+            this.startControlsTimeout();
+        });
+        
+        // Video tıklama ile oynat/duraklat
+        this.videoElement.addEventListener('click', () => {
+            this.togglePlay();
+        });
+        
+        // Mouse player'dan çıkınca
+        this.netflixPlayer.addEventListener('mouseleave', () => {
+            if (!this.isFullscreen) {
+                this.startControlsTimeout();
             }
         });
-
-        // Pencere boyutu değişikliği
-        window.addEventListener('resize', () => this.handleResize());
-
-        // Progress bar drag için
-        this.setupProgressBarDrag();
     }
-
+    
+    // Progress bar drag
     setupProgressBarDrag() {
         let isDragging = false;
-
+        
         this.progressHandle.addEventListener('mousedown', (e) => {
             e.preventDefault();
             isDragging = true;
@@ -667,14 +603,8 @@ class NetflixPlayer {
                 if (!isDragging) return;
                 const rect = this.progressBar.getBoundingClientRect();
                 let percent = (e.clientX - rect.left) / rect.width;
-                percent = Math.max(0, Math.min(percent, 1));
-                
-                // Preview gösterme
-                this.progressFill.style.width = percent * 100 + '%';
-                this.progressHandle.style.left = percent * 100 + '%';
-                
-                const previewTime = percent * this.videoElement.duration;
-                this.currentTimeEl.textContent = this.formatTime(previewTime);
+                percent = Math.max(0, Math.min(1, percent));
+                this.updateProgressPreview(percent);
             };
             
             const onMouseUp = (e) => {
@@ -683,8 +613,7 @@ class NetflixPlayer {
                 
                 const rect = this.progressBar.getBoundingClientRect();
                 const percent = (e.clientX - rect.left) / rect.width;
-                this.videoElement.currentTime = Math.max(0, Math.min(percent * this.videoElement.duration, this.videoElement.duration));
-                
+                this.seekToPercent(percent);
                 this.stopScrubbing();
                 
                 document.removeEventListener('mousemove', onMouseMove);
@@ -694,74 +623,73 @@ class NetflixPlayer {
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
         });
-
-        // Touch desteği
+        
+        // Touch için
         this.progressHandle.addEventListener('touchstart', (e) => {
             e.preventDefault();
             isDragging = true;
             this.startScrubbing();
         });
-
+        
         this.progressBar.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
             const touch = e.touches[0];
             const rect = this.progressBar.getBoundingClientRect();
             let percent = (touch.clientX - rect.left) / rect.width;
-            percent = Math.max(0, Math.min(percent, 1));
-            
-            this.progressFill.style.width = percent * 100 + '%';
-            this.progressHandle.style.left = percent * 100 + '%';
-            
-            const previewTime = percent * this.videoElement.duration;
-            this.currentTimeEl.textContent = this.formatTime(previewTime);
+            percent = Math.max(0, Math.min(1, percent));
+            this.updateProgressPreview(percent);
         });
-
+        
         this.progressBar.addEventListener('touchend', (e) => {
             if (!isDragging) return;
             isDragging = false;
-            
             const touch = e.changedTouches[0];
             const rect = this.progressBar.getBoundingClientRect();
             const percent = (touch.clientX - rect.left) / rect.width;
-            this.videoElement.currentTime = Math.max(0, Math.min(percent * this.videoElement.duration, this.videoElement.duration));
-            
+            this.seekToPercent(percent);
             this.stopScrubbing();
         });
     }
-
+    
+    // Scrubbing başlat
     startScrubbing() {
         this.isScrubbing = true;
         this.videoElement.pause();
         this.showControls();
-        this.clearHideControlsTimeout();
+        this.clearControlsTimeout();
     }
-
+    
+    // Scrubbing bitir
     stopScrubbing() {
         this.isScrubbing = false;
         if (this.isPlaying) {
-            this.videoElement.play().catch(console.error);
+            this.videoElement.play();
         }
-        this.startHideControlsTimeout();
+        this.startControlsTimeout();
     }
-
+    
+    // Menü fonksiyonları
     toggleSubtitlesMenu() {
+        if (!this.subtitlesMenu) return;
         const isVisible = this.subtitlesMenu.style.display === 'block';
         this.subtitlesMenu.style.display = isVisible ? 'none' : 'block';
         this.hideOtherMenus('subtitles');
     }
-
+    
     toggleSettingsMenu() {
+        if (!this.settingsMenu) return;
         const isVisible = this.settingsMenu.style.display === 'block';
         this.settingsMenu.style.display = isVisible ? 'none' : 'block';
         this.hideOtherMenus('settings');
     }
-
+    
     togglePlaybackSpeedMenu() {
+        if (!this.playbackSpeedMenu) return;
         const isVisible = this.playbackSpeedMenu.style.display === 'block';
         this.playbackSpeedMenu.style.display = isVisible ? 'none' : 'block';
         this.hideOtherMenus('playbackSpeed');
     }
-
+    
     hideOtherMenus(except) {
         if (except !== 'subtitles' && this.subtitlesMenu) {
             this.subtitlesMenu.style.display = 'none';
@@ -772,185 +700,46 @@ class NetflixPlayer {
         if (except !== 'playbackSpeed' && this.playbackSpeedMenu) {
             this.playbackSpeedMenu.style.display = 'none';
         }
-    }
-
-    setupControlsAutoHide() {
-        // Mobil cihazlarda da kontrollerin otomatik gizlenmesini sağla
-        if (this.isMobile) {
-            setTimeout(() => {
-                this.startHideControlsTimeout();
-            }, 3000);
-        } else {
-            this.startHideControlsTimeout();
+        if (this.volumeControl) {
+            this.volumeControl.style.display = 'none';
         }
     }
-
+    
+    // Kontrolleri ayarla
+    setupControls() {
+        this.showControls();
+        this.startControlsTimeout();
+    }
+    
+    // Kontrolleri geçici göster
     showControlsTemporarily() {
         if (this.isMobile || this.isScrubbing) return;
-        
         this.showControls();
-        this.clearHideControlsTimeout();
-        this.startHideControlsTimeout();
+        this.clearControlsTimeout();
+        this.startControlsTimeout();
     }
-
-    showControls() {
-        this.netflixPlayer.classList.remove('controls-hidden');
-        this.isControlsVisible = true;
-    }
-
-    hideControls() {
-        if (!this.isPlaying || this.isMobile || !this.isControlsVisible || this.isScrubbing) return;
-        
-        this.netflixPlayer.classList.add('controls-hidden');
-        this.volumeControl.style.display = 'none';
-        this.hideOtherMenus();
-        this.isControlsVisible = false;
-    }
-
+    
+    // Mobil kontroller aç/kapa
     toggleControls() {
         if (this.isMobile) {
-            if (this.isControlsVisible) {
-                this.netflixPlayer.classList.add('controls-hidden');
-                this.isControlsVisible = false;
+            if (this.controlsVisible) {
+                this.hideControls();
             } else {
-                this.netflixPlayer.classList.remove('controls-hidden');
-                this.isControlsVisible = true;
-                this.startHideControlsTimeout();
+                this.showControls();
+                this.startControlsTimeout();
             }
         }
     }
-
-    startHideControlsTimeout() {
-        if (this.isScrubbing) return;
-        
-        this.clearHideControlsTimeout();
-        this.hideControlsTimeout = setTimeout(() => {
-            if (this.isPlaying && this.isControlsVisible) {
-                // Mobil cihazlarda tam ekran modunda da gizle
-                if (this.isMobile && this.isFullscreen) {
-                    this.hideControls();
-                } else if (!this.isMobile) {
-                    this.hideControls();
-                }
-            }
-        }, this.isMobile ? 4000 : 3000); // Mobilde biraz daha uzun süre
-    }
-
-    clearHideControlsTimeout() {
-        if (this.hideControlsTimeout) {
-            clearTimeout(this.hideControlsTimeout);
-            this.hideControlsTimeout = null;
-        }
-    }
-
-    togglePlay() {
-        if (this.videoElement.paused) {
-            this.videoElement.play().catch(e => {
-                console.error('Play failed:', e);
-                // Otomatik oynatma engellendiyse, kullanıcıya göster
-                if (e.name === 'NotAllowedError') {
-                    this.showControls();
-                }
-            });
-        } else {
-            this.videoElement.pause();
-        }
-        this.showControlsTemporarily();
-    }
-
-    onPlay() {
-        this.isPlaying = true;
-        this.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        if (!this.isMobile) {
-            this.startHideControlsTimeout();
-        }
-    }
-
-    onPause() {
-        this.isPlaying = false;
-        this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-        this.clearHideControlsTimeout();
-        this.showControls();
-    }
-
-    seek(e) {
-        const rect = this.progressBar.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        this.videoElement.currentTime = Math.max(0, Math.min(percent * this.videoElement.duration, this.videoElement.duration));
-        this.showControlsTemporarily();
-    }
-
-    updateProgress() {
-        if (this.isScrubbing) return;
-        
-        const currentTime = this.videoElement.currentTime;
-        const duration = this.videoElement.duration;
-        
-        if (duration && isFinite(duration)) {
-            const percent = (currentTime / duration) * 100;
-            this.progressFill.style.width = percent + '%';
-            this.progressHandle.style.left = percent + '%';
-            
-            this.currentTimeEl.textContent = this.formatTime(currentTime);
-        }
-    }
-
-    updateDuration() {
-        if (this.videoElement.duration && isFinite(this.videoElement.duration)) {
-            this.durationEl.textContent = this.formatTime(this.videoElement.duration);
-        }
-    }
-
-    formatTime(seconds) {
-        if (isNaN(seconds)) return '0:00';
-        
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = Math.floor(seconds % 60);
-        
-        if (hours > 0) {
-            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        } else {
-            return `${minutes}:${secs.toString().padStart(2, '0')}`;
-        }
-    }
-
-    setVolume() {
-        const volume = parseFloat(this.volumeSlider.value);
-        this.videoElement.volume = volume;
-        this.videoElement.muted = (volume === 0);
-        this.updateVolumeIcon();
-    }
-
-    updateVolumeIcon() {
-        const volume = this.videoElement.volume;
-        const isMuted = this.videoElement.muted;
-        
-        let icon;
-        if (isMuted || volume === 0) {
-            icon = 'volume-mute';
-        } else if (volume < 0.5) {
-            icon = 'volume-down';
-        } else {
-            icon = 'volume-up';
-        }
-        
-        this.volumeBtn.innerHTML = `<i class="fas fa-${icon}"></i>`;
-    }
-
-    toggleMute() {
-        this.videoElement.muted = !this.videoElement.muted;
-        if (this.videoElement.muted) {
-            this.volumeSlider.value = 0;
-        } else {
-            this.volumeSlider.value = this.videoElement.volume;
-        }
-        this.updateVolumeIcon();
-        this.showControlsTemporarily();
-    }
-
+    
+    // Tuş işleyici
     handleKeyPress(e) {
-        // Eğer input alanında değilse klavye kontrollerini işle
+        // TV modunda özel işleyici
+        if (this.isTV) {
+            this.handleTVKeyPress(e);
+            return;
+        }
+        
+        // Normal klavye kontrolleri
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
         
         switch(e.key.toLowerCase()) {
@@ -978,6 +767,8 @@ class NetflixPlayer {
             case 'escape':
                 if (this.isFullscreen) {
                     this.exitFullscreen();
+                } else {
+                    goBack();
                 }
                 break;
             case 'p':
@@ -997,50 +788,255 @@ class NetflixPlayer {
         }
         this.showControlsTemporarily();
     }
-
+    
+    // TV tuş işleyici
+    handleTVKeyPress(e) {
+        const now = Date.now();
+        
+        // Debounce (200ms)
+        if (now - this.lastKeyPressTime < 200) {
+            e.preventDefault();
+            return;
+        }
+        this.lastKeyPressTime = now;
+        
+        console.log("TV Player Key:", e.key, "Code:", e.keyCode);
+        
+        // Tüm menüleri kapat
+        this.hideOtherMenus();
+        
+        // Kontrolleri göster
+        this.showControls();
+        this.startControlsTimeout();
+        
+        switch(e.key) {
+            case 'ArrowUp':
+            case 'Up':
+            case 38:
+                e.preventDefault();
+                this.adjustVolume(0.1);
+                break;
+                
+            case 'ArrowDown':
+            case 'Down':
+            case 40:
+                e.preventDefault();
+                this.adjustVolume(-0.1);
+                break;
+                
+            case 'ArrowLeft':
+            case 'Left':
+            case 37:
+                e.preventDefault();
+                this.skip(-10);
+                this.showOSD('⏪ -10s');
+                break;
+                
+            case 'ArrowRight':
+            case 'Right':
+            case 39:
+                e.preventDefault();
+                this.skip(10);
+                this.showOSD('⏩ +10s');
+                break;
+                
+            case 'Enter':
+            case 13:
+            case 'MediaPlayPause':
+                e.preventDefault();
+                this.togglePlay();
+                this.showOSD(this.videoElement.paused ? '⏸️ Duraklatıldı' : '▶️ Oynatılıyor');
+                break;
+                
+            case ' ':
+            case 'Spacebar':
+            case 32:
+                e.preventDefault();
+                this.togglePlay();
+                this.showOSD(this.videoElement.paused ? '⏸️ Duraklatıldı' : '▶️ Oynatılıyor');
+                break;
+                
+            case 'Backspace':
+            case 'Back':
+            case 'Escape':
+            case 'Esc':
+            case 27:
+            case 'Return':
+                e.preventDefault();
+                goBack();
+                break;
+                
+            case 'MediaStop':
+                e.preventDefault();
+                this.videoElement.pause();
+                this.videoElement.currentTime = 0;
+                this.showOSD('⏹️ Durduruldu');
+                break;
+                
+            case 'MediaFastForward':
+                e.preventDefault();
+                this.skip(30);
+                this.showOSD('⏩ +30s');
+                break;
+                
+            case 'MediaRewind':
+                e.preventDefault();
+                this.skip(-30);
+                this.showOSD('⏪ -30s');
+                break;
+                
+            case 'ColorF0Red':
+            case 'ColorF1Green':
+            case 'ColorF2Yellow':
+            case 'ColorF3Blue':
+                e.preventDefault();
+                this.showOSD(`${e.key} tuşu`);
+                break;
+                
+            // Tizen özel tuşlar
+            case 10009: // RETURN
+                e.preventDefault();
+                goBack();
+                break;
+                
+            case 10182: // EXIT
+                e.preventDefault();
+                if (typeof tizen !== 'undefined' && tizen.application) {
+                    tizen.application.getCurrentApplication().exit();
+                } else {
+                    goBack();
+                }
+                break;
+                
+            case 10252: // PLAY_PAUSE
+                e.preventDefault();
+                this.togglePlay();
+                this.showOSD(this.videoElement.paused ? '⏸️ Duraklatıldı' : '▶️ Oynatılıyor');
+                break;
+                
+            case 412: // REWIND
+                e.preventDefault();
+                this.skip(-30);
+                this.showOSD('⏪ -30s');
+                break;
+                
+            case 417: // FAST_FORWARD
+                e.preventDefault();
+                this.skip(30);
+                this.showOSD('⏩ +30s');
+                break;
+        }
+    }
+    
+    // OSD (On Screen Display) göster
+    showOSD(text) {
+        // Eski OSD'yi temizle
+        const oldOSD = document.getElementById('tvOSD');
+        if (oldOSD) oldOSD.remove();
+        
+        // Yeni OSD oluştur
+        const osd = document.createElement('div');
+        osd.id = 'tvOSD';
+        osd.className = 'tv-osd';
+        osd.textContent = text;
+        
+        // Stil ekle
+        osd.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 25px 50px;
+            border-radius: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            z-index: 9999;
+            text-align: center;
+            min-width: 250px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            animation: tvOsdFade 0.2s ease;
+        `;
+        
+        this.netflixPlayer.appendChild(osd);
+        
+        // 1.5 saniye sonra kaldır
+        setTimeout(() => {
+            if (osd.parentNode) {
+                osd.parentNode.removeChild(osd);
+            }
+        }, 1500);
+    }
+    
+    // Ses ayarla
+    adjustVolume(change) {
+        let newVolume = this.videoElement.volume + change;
+        newVolume = Math.max(0, Math.min(1, newVolume));
+        this.videoElement.volume = newVolume;
+        this.videoElement.muted = (newVolume === 0);
+        
+        this.updateVolumeIcon();
+        if (this.volumeSlider) {
+            this.volumeSlider.value = newVolume;
+        }
+        
+        const volumePercent = Math.round(newVolume * 100);
+        this.showOSD(`🔊 ${volumePercent}%`);
+    }
+    
+    // Oynat/Duraklat
+    togglePlay() {
+        if (this.videoElement.paused) {
+            this.videoElement.play().catch(e => {
+                console.error('Play failed:', e);
+                if (e.name === 'NotAllowedError') {
+                    this.showControls();
+                }
+            });
+        } else {
+            this.videoElement.pause();
+        }
+        this.showControls();
+    }
+    
+    // İleri/Geri sar
     skip(seconds) {
         this.videoElement.currentTime += seconds;
-        this.showControlsTemporarily();
+        this.showControls();
     }
-
+    
+    // Tam ekran
     toggleFullscreen() {
         if (!this.isFullscreen) {
             this.enterFullscreen();
         } else {
             this.exitFullscreen();
         }
-        this.showControlsTemporarily();
+        this.showControls();
     }
-
+    
     enterFullscreen() {
-        const player = this.netflixPlayer;
-        
-        // Mobil cihazlar için farklı yaklaşım
         if (this.isMobile) {
-            // Mobil cihazlarda video elementini tam ekran yap
             if (this.videoElement.webkitEnterFullscreen) {
                 this.videoElement.webkitEnterFullscreen();
             } else if (this.videoElement.requestFullscreen) {
                 this.videoElement.requestFullscreen();
-            } else if (this.videoElement.mozRequestFullScreen) {
-                this.videoElement.mozRequestFullScreen();
-            } else if (this.videoElement.msRequestFullscreen) {
-                this.videoElement.msRequestFullscreen();
             }
         } else {
-            // Masaüstü için normal tam ekran
-            if (player.requestFullscreen) {
-                player.requestFullscreen();
-            } else if (player.webkitRequestFullscreen) {
-                player.webkitRequestFullscreen();
-            } else if (player.mozRequestFullScreen) {
-                player.mozRequestFullScreen();
-            } else if (player.msRequestFullscreen) {
-                player.msRequestFullscreen();
+            if (this.netflixPlayer.requestFullscreen) {
+                this.netflixPlayer.requestFullscreen();
+            } else if (this.netflixPlayer.webkitRequestFullscreen) {
+                this.netflixPlayer.webkitRequestFullscreen();
+            } else if (this.netflixPlayer.mozRequestFullScreen) {
+                this.netflixPlayer.mozRequestFullScreen();
+            } else if (this.netflixPlayer.msRequestFullscreen) {
+                this.netflixPlayer.msRequestFullscreen();
             }
         }
     }
-
+    
     exitFullscreen() {
         if (document.exitFullscreen) {
             document.exitFullscreen();
@@ -1052,31 +1048,8 @@ class NetflixPlayer {
             document.msExitFullscreen();
         }
     }
-
-    handleFullscreenChange() {
-        this.isFullscreen = !!(document.fullscreenElement || 
-                              document.webkitFullscreenElement || 
-                              document.mozFullScreenElement || 
-                              document.msFullscreenElement ||
-                              this.videoElement.webkitDisplayingFullscreen);
-        
-        // Fullscreen buton ikonunu güncelle
-        const icon = this.isFullscreen ? 'compress' : 'expand';
-        this.fullscreenBtn.innerHTML = `<i class="fas fa-${icon}"></i>`;
-        
-        // Fullscreen modunda kontrolleri göster
-        this.showControls();
-        
-        // Mobil cihazlarda tam ekranda kontrollerin otomatik gizlenmesi
-        if (this.isMobile && this.isFullscreen) {
-            setTimeout(() => {
-                this.startHideControlsTimeout();
-            }, 2000);
-        } else {
-            this.startHideControlsTimeout();
-        }
-    }
-
+    
+    // Picture-in-Picture
     togglePictureInPicture() {
         if (document.pictureInPictureElement) {
             document.exitPictureInPicture();
@@ -1084,37 +1057,200 @@ class NetflixPlayer {
             this.videoElement.requestPictureInPicture();
         }
     }
-
+    
+    // PiP başladığında
     onPiPStart() {
         this.isPiP = true;
     }
-
+    
+    // PiP bittiğinde
     onPiPStop() {
         this.isPiP = false;
     }
-
+    
+    // Sessiz aç/kapa
+    toggleMute() {
+        this.videoElement.muted = !this.videoElement.muted;
+        this.updateVolumeIcon();
+        this.showControls();
+    }
+    
+    // Ses ayarla
+    setVolume() {
+        const volume = parseFloat(this.volumeSlider.value);
+        this.videoElement.volume = volume;
+        this.videoElement.muted = (volume === 0);
+        this.updateVolumeIcon();
+    }
+    
+    // Ses ikonunu güncelle
+    updateVolumeIcon() {
+        const volume = this.videoElement.volume;
+        const isMuted = this.videoElement.muted;
+        
+        let icon;
+        if (isMuted || volume === 0) {
+            icon = 'volume-mute';
+        } else if (volume < 0.5) {
+            icon = 'volume-down';
+        } else {
+            icon = 'volume-up';
+        }
+        
+        this.volumeBtn.innerHTML = `<i class="fas fa-${icon}"></i>`;
+    }
+    
+    // İlerlemeyi güncelle
+    updateProgress() {
+        if (this.isScrubbing) return;
+        
+        const currentTime = this.videoElement.currentTime;
+        const duration = this.videoElement.duration;
+        
+        if (duration && isFinite(duration)) {
+            const percent = (currentTime / duration) * 100;
+            this.progressFill.style.width = percent + '%';
+            this.progressHandle.style.left = percent + '%';
+            this.currentTimeEl.textContent = this.formatTime(currentTime);
+        }
+    }
+    
+    // Süreyi güncelle
+    updateDuration() {
+        if (this.videoElement.duration && isFinite(this.videoElement.duration)) {
+            this.durationEl.textContent = this.formatTime(this.videoElement.duration);
+        }
+    }
+    
+    // İlerleme önizlemesi
+    updateProgressPreview(percent) {
+        this.progressFill.style.width = percent * 100 + '%';
+        this.progressHandle.style.left = percent * 100 + '%';
+        
+        const previewTime = percent * this.videoElement.duration;
+        this.currentTimeEl.textContent = this.formatTime(previewTime);
+    }
+    
+    // Belirli yüzdeliğe git
+    seekToPercent(percent) {
+        this.videoElement.currentTime = percent * this.videoElement.duration;
+    }
+    
+    // Tıklama ile seek
+    seek(e) {
+        const rect = this.progressBar.getBoundingClientRect();
+        const percent = (e.clientX - rect.left) / rect.width;
+        this.videoElement.currentTime = percent * this.videoElement.duration;
+        this.showControls();
+    }
+    
+    // Zaman formatı
+    formatTime(seconds) {
+        if (isNaN(seconds)) return '0:00';
+        
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        
+        if (hours > 0) {
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        } else {
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+    }
+    
+    // Kontrolleri göster
+    showControls() {
+        this.netflixPlayer.classList.remove('controls-hidden');
+        this.controlsVisible = true;
+    }
+    
+    // Kontrolleri gizle
+    hideControls() {
+        if (!this.isPlaying || !this.controlsVisible || this.isScrubbing) return;
+        this.netflixPlayer.classList.add('controls-hidden');
+        this.controlsVisible = false;
+    }
+    
+    // Kontroller timeout'u başlat
+    startControlsTimeout() {
+        this.clearControlsTimeout();
+        this.controlsTimeout = setTimeout(() => {
+            this.hideControls();
+        }, 3000);
+    }
+    
+    // Kontroller timeout'u temizle
+    clearControlsTimeout() {
+        if (this.controlsTimeout) {
+            clearTimeout(this.controlsTimeout);
+            this.controlsTimeout = null;
+        }
+    }
+    
+    // Video oynatıldığında
+    onPlay() {
+        this.isPlaying = true;
+        this.playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        this.startControlsTimeout();
+    }
+    
+    // Video duraklatıldığında
+    onPause() {
+        this.isPlaying = false;
+        this.playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        this.clearControlsTimeout();
+        this.showControls();
+    }
+    
+    // Fullscreen değişikliği
+    handleFullscreenChange() {
+        this.isFullscreen = !!(document.fullscreenElement || 
+                              document.webkitFullscreenElement || 
+                              document.mozFullScreenElement ||
+                              document.msFullscreenElement ||
+                              this.videoElement.webkitDisplayingFullscreen);
+        
+        const icon = this.isFullscreen ? 'compress' : 'expand';
+        this.fullscreenBtn.innerHTML = `<i class="fas fa-${icon}"></i>`;
+        this.showControls();
+        
+        // Mobil cihazlarda tam ekranda kontroller timeout'u
+        if (this.isMobile && this.isFullscreen) {
+            setTimeout(() => {
+                this.startControlsTimeout();
+            }, 2000);
+        } else {
+            this.startControlsTimeout();
+        }
+    }
+    
+    // Pencere boyutu değişikliği
     handleResize() {
-        // Ekran boyutu değiştiğinde kontrol et
         this.updateProgress();
     }
-
+    
+    // Yükleme göster
     showLoading() {
         this.loadingOverlay.style.display = 'flex';
     }
-
+    
+    // Yükleme gizle
     hideLoading() {
         this.loadingOverlay.style.display = 'none';
     }
-
+    
+    // Hata göster
     showError(message) {
         this.errorText.textContent = message;
         this.errorOverlay.style.display = 'flex';
         this.hideLoading();
     }
-
+    
+    // Video hatası
     handlePlayerError() {
         const error = this.videoElement.error;
-        let message = 'Video yüklenirken bilinmeyen bir hata oluştu.';
+        let message = 'Video yüklenirken hata oluştu.';
         
         if (error) {
             switch(error.code) {
@@ -1122,7 +1258,7 @@ class NetflixPlayer {
                     message = 'Video yüklenmesi iptal edildi.';
                     break;
                 case error.MEDIA_ERR_NETWORK:
-                    message = 'Ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edin.';
+                    message = 'Ağ hatası oluştu. İnternet bağlantınızı kontrol edin.';
                     break;
                 case error.MEDIA_ERR_DECODE:
                     message = 'Video decode hatası. Format desteklenmiyor.';
@@ -1135,124 +1271,73 @@ class NetflixPlayer {
         
         this.showError(message);
     }
-
+    
+    // Kritik HLS hatası
     handleFatalError(data) {
         let message = 'Video oynatılırken kritik hata oluştu.';
-        
-        if (data && data.type) {
-            switch(data.type) {
-                case 'networkError':
-                case Hls.ErrorTypes.NETWORK_ERROR:
-                    message = 'Ağ hatası. Lütfen internet bağlantınızı kontrol edin.';
-                    break;
-                case 'mediaError':
-                case Hls.ErrorTypes.MEDIA_ERROR:
-                    message = 'Medya hatası. Video dosyası bozuk olabilir.';
-                    break;
-                default:
-                    message = `Hata: ${data.type}`;
-                    break;
-            }
-        }
-        
         this.showError(message);
         
-        // HLS instance'ını temizle
         if (this.hls) {
             this.hls.destroy();
             this.hls = null;
         }
     }
-
+    
+    // Temizlik
     destroy() {
-        this.clearHideControlsTimeout();
-        
-        // Sesi kapat
-        this.videoElement.volume = 0;
-        this.videoElement.muted = true;
-        
-        // Video elementini durdur
+        this.clearControlsTimeout();
         this.videoElement.pause();
         this.videoElement.currentTime = 0;
         
-        // HLS instance'ını temizle
         if (this.hls) {
             this.hls.destroy();
             this.hls = null;
         }
         
-        // Video elementini temizle
         this.videoElement.src = '';
         this.videoElement.load();
-        
-        // Media Session API'yi temizle (eğer kullanıyorsanız)
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = null;
-            navigator.mediaSession.playbackState = 'none';
-        }
     }
 }
 
 // Global fonksiyonlar
 function goBack() {
-    window.history.back();
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = 'index.html';
+    }
 }
 
 function retryPlayback() {
     window.location.reload();
 }
 
-function toggleSettings() {
-    const settings = document.getElementById('settingsMenu');
-    if (settings) {
-        settings.style.display = settings.style.display === 'block' ? 'none' : 'block';
-    }
-}
-
-// Hls.js yüklenmesini kontrol et
-function checkHlsLoaded() {
-    if (typeof Hls === 'undefined') {
-        console.error('Hls.js not loaded! Loading now...');
-        // Hls.js yüklenmemişse, CDN'den yükle
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
-        script.onload = () => {
-            // Hls.js yüklendikten sonra player'ı başlat
-            if (!window.netflixPlayer) {
-                window.netflixPlayer = new NetflixPlayer();
-            }
-        };
-        script.onerror = () => {
-            console.error('Failed to load Hls.js from CDN');
-            // Hata mesajı göster
-            const errorDiv = document.createElement('div');
-            errorDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);color:white;padding:20px;border-radius:5px;z-index:10000;';
-            errorDiv.innerHTML = '<h3>Hata</h3><p>HLS player yüklenemedi. Lütfen sayfayı yenileyin.</p><button onclick="location.reload()">Yenile</button>';
-            document.body.appendChild(errorDiv);
-        };
-        document.head.appendChild(script);
-        return false;
-    }
-    return true;
-}
-
-// Sayfa yüklendiğinde player'ı başlat
+// Player başlatma
 document.addEventListener('DOMContentLoaded', () => {
-    // Önce Hls.js'nin yüklü olup olmadığını kontrol et
+    // HLS kontrolü
     const urlParams = new URLSearchParams(window.location.search);
     const videoUrl = urlParams.get('url');
     const isHLS = videoUrl && (videoUrl.toLowerCase().includes('.m3u8') || 
-                              videoUrl.toLowerCase().includes('.m3u') || 
                               videoUrl.toLowerCase().includes('/hls/'));
     
-    if (isHLS) {
-        // HLS video ise Hls.js kontrolü yap
-        if (checkHlsLoaded()) {
-            window.netflixPlayer = new NetflixPlayer();
-        }
-    } else {
-        // Direkt video ise hemen başlat
+    const initPlayer = () => {
         window.netflixPlayer = new NetflixPlayer();
+    };
+    
+    if (isHLS && typeof Hls === 'undefined') {
+        // Hls.js yükle
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+        script.onload = initPlayer;
+        script.onerror = () => {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);color:white;padding:20px;border-radius:5px;z-index:10000;text-align:center;';
+            errorDiv.innerHTML = '<h3>Hata</h3><p>Video player yüklenemedi.</p><button onclick="location.reload()" style="padding:10px 20px;margin-top:10px;">Yenile</button>';
+            document.body.appendChild(errorDiv);
+        };
+        document.head.appendChild(script);
+    } else {
+        initPlayer();
     }
 });
 
@@ -1263,7 +1348,7 @@ window.addEventListener('beforeunload', () => {
     }
 });
 
-// Hata durumunda yeniden deneme
+// Çevrimdışı/çevrimiçi kontrol
 window.addEventListener('online', () => {
     const errorOverlay = document.getElementById('errorOverlay');
     if (errorOverlay && errorOverlay.style.display === 'flex') {
@@ -1271,24 +1356,13 @@ window.addEventListener('online', () => {
     }
 });
 
-// Hata ayıklama için
+// Hata ayıklama
 window.debugPlayer = function() {
     console.log('Player Debug Info:');
     console.log('- isPlaying:', window.netflixPlayer.isPlaying);
+    console.log('- isTV:', window.netflixPlayer.isTV);
     console.log('- isHLS:', window.netflixPlayer.isHLS);
-    console.log('- HLS instance:', window.netflixPlayer.hls);
     console.log('- Video src:', window.netflixPlayer.videoElement.src);
-    console.log('- Video readyState:', window.netflixPlayer.videoElement.readyState);
-    console.log('- Video error:', window.netflixPlayer.videoElement.error);
-    console.log('- Video networkState:', window.netflixPlayer.videoElement.networkState);
-    console.log('- Video duration:', window.netflixPlayer.videoElement.duration);
     console.log('- Video currentTime:', window.netflixPlayer.videoElement.currentTime);
-    
-    if (window.netflixPlayer.hls) {
-        console.log('- HLS currentLevel:', window.netflixPlayer.hls.currentLevel);
-        console.log('- HLS levels:', window.netflixPlayer.hls.levels);
-        console.log('- HLS currentTime:', window.netflixPlayer.hls.currentTime);
-    }
+    console.log('- Video duration:', window.netflixPlayer.videoElement.duration);
 };
-
-
