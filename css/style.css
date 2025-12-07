@@ -301,11 +301,36 @@ nav ul li a.active:hover{background-color:var( --primary-hover)}
     .results-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:calc(var(--spacing-base) * 2)} /* 10px */
 }
 
-/* TV'ler için genel stiller */
-.tv-mode {-webkit-font-smoothing: antialiased;font-size: 24px;}
-.tv-mode button,.tv-mode a {min-height: 60px;min-width: 120px;padding: 15px 25px;}
-.tv-mode input {font-size: 24px;height: 60px;padding: 15px;}
-.tv-mode ::-webkit-scrollbar {display: none;}
+/* TV Navigasyon için genel stiller */
+.tv-mode {
+    cursor: none !important;
+}
+
+.tv-mode *:focus {
+    outline: 4px solid #e50914 !important;
+    outline-offset: 4px !important;
+    box-shadow: 0 0 20px rgba(229, 9, 20, 0.5) !important;
+}
+
+/* Scrollbar gizleme TV'de */
+.tv-mode ::-webkit-scrollbar {
+    display: none;
+}
+
+.tv-mode {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* TV için büyük fontlar */
+.tv-mode body {
+    font-size: 20px;
+}
+
+/* TV için yavaş geçişler (göz yormamak için) */
+.tv-mode * {
+    transition: all 0.3s ease !important;
+}
 
 .flex {display: flex;}
 .hidden {display: none;}
