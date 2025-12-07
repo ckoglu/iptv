@@ -1,114 +1,105 @@
-// Ana sayfa için TV navigasyon desteği
+// navigation.js - Ana sayfa TV navigasyonu
 document.addEventListener("DOMContentLoaded", function () {
     // TV algılama
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isSmartTV =
-        userAgent.includes("tizen") ||
-        userAgent.includes("webos") ||
-        userAgent.includes("smart-tv") ||
-        userAgent.includes("smarttv") ||
-        userAgent.includes("netcast") ||
-        userAgent.includes("appletv") ||
-        userAgent.includes("android tv") ||
-        userAgent.includes("crkey") ||
-        userAgent.includes("xbox") ||
-        /tv/ui.test(userAgent);
-
-    if (isSmartTV) {
-        console.log("SMART TV MODE: Ana sayfa navigasyon aktif");
+    const isTV = detectTV();
+    
+    if (isTV) {
+        console.log("TV MODE: Ana sayfa navigasyon aktif");
         initTVNavigation();
+        initTVStyle();
     }
     
-    // Normal navigasyonu da ekle (TV'de de çalışsın)
+    // Normal navigasyon
     initNormalNavigation();
 });
 
+// TV algılama fonksiyonu
+function detectTV() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    return userAgent.includes("tizen") ||
+           userAgent.includes("webos") ||
+           userAgent.includes("smart-tv") ||
+           userAgent.includes("smarttv") ||
+           userAgent.includes("netcast") ||
+           userAgent.includes("appletv") ||
+           userAgent.includes("android tv") ||
+           userAgent.includes("crkey") ||
+           userAgent.includes("xbox") ||
+           /tv/ui.test(userAgent);
+}
+
+// TV navigasyonu başlatma
 function initTVNavigation() {
-    // TV modu için CSS sınıfı ekle
+    // TV modu için CSS sınıfı
     document.body.classList.add('tv-mode');
     document.body.style.cursor = 'none';
     
-    // Tüm odaklanabilir elementleri bul
     let focusableElements = [];
-    let currentRowIndex = 0;
-    let currentItemIndex = 0;
-    let rows = [];
+    let currentIndex = 0;
     
-    // Satırları ve içindeki öğeleri bul
+    // Odaklanabilir elementleri güncelle
     function updateFocusableElements() {
-        rows = Array.from(document.querySelectorAll('.content-row'));
-        focusableElements = [];
-        
-        rows.forEach((row, rowIndex) => {
-            const items = Array.from(row.querySelectorAll('.content-item'));
-            items.forEach((item, itemIndex) => {
-                // Tabindex ekle ve click event'ini düzenle
-                item.setAttribute('tabindex', '0');
-                focusableElements.push({
-                    element: item,
-                    rowIndex: rowIndex,
-                    itemIndex: itemIndex
-                });
-            });
+        focusableElements = Array.from(document.querySelectorAll(
+            'a, button, .content-item, .quick-link-card, .scroll-btn, .search-icon, .profile, .mobile-menu-toggle, [tabindex]:not([tabindex="-1"])'
+        )).filter(el => {
+            return el.offsetParent !== null && 
+                   getComputedStyle(el).display !== 'none' &&
+                   getComputedStyle(el).visibility !== 'hidden' &&
+                   !el.disabled;
         });
         
-        // Navigasyon butonlarını da ekle
-        const navButtons = Array.from(document.querySelectorAll('.scroll-btn, .logo, .search-icon, .profile, .mobile-menu-toggle, .quick-link-card'));
-        navButtons.forEach((btn, index) => {
-            btn.setAttribute('tabindex', '0');
-            focusableElements.push({
-                element: btn,
-                rowIndex: -1,
-                itemIndex: index + 1000
-            });
+        // Tabindex ekle
+        focusableElements.forEach((el, index) => {
+            el.setAttribute('tabindex', '0');
         });
         
-        // Header linklerini ekle
-        const headerLinks = Array.from(document.querySelectorAll('#main-nav a'));
-        headerLinks.forEach((link, index) => {
-            link.setAttribute('tabindex', '0');
-            focusableElements.push({
-                element: link,
-                rowIndex: -2,
-                itemIndex: index + 2000
-            });
-        });
-        
-        console.log("TV Navigation: " + focusableElements.length + " element bulundu");
+        console.log("TV Navigation: " + focusableElements.length + " focusable elements");
     }
     
     // İlk elemente odaklan
     function focusFirstElement() {
         updateFocusableElements();
         if (focusableElements.length > 0) {
-            focusableElements[0].element.focus();
-            currentItemIndex = 0;
-            currentRowIndex = focusableElements[0].rowIndex;
+            focusableElements[0].focus();
+            currentIndex = 0;
+            highlightElement(focusableElements[0]);
         }
     }
     
-    // Geçerli satırdaki öğeleri al
-    function getCurrentRowItems() {
-        return focusableElements.filter(item => item.rowIndex === currentRowIndex);
+    // Element vurgulama
+    function highlightElement(element) {
+        // Önceki vurgulamayı temizle
+        document.querySelectorAll('.tv-focused').forEach(el => {
+            el.classList.remove('tv-focused');
+        });
+        
+        // Yeni vurgulamayı ekle
+        element.classList.add('tv-focused');
+        
+        // Ekrana getir
+        element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center'
+        });
     }
     
-    // Odak hareketi
+    // Yön tuşları ile navigasyon
     function moveFocus(direction) {
-        updateFocusableElements();
         if (focusableElements.length === 0) return;
         
         const current = document.activeElement;
         const currentRect = current.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
         const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
         
         let bestCandidate = null;
         let bestScore = -Infinity;
         
         focusableElements.forEach(candidate => {
-            if (candidate.element === current) return;
+            if (candidate === current) return;
             
-            const rect = candidate.element.getBoundingClientRect();
+            const rect = candidate.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
             const currentCenterX = currentRect.left + currentRect.width / 2;
@@ -124,49 +115,39 @@ function initTVNavigation() {
                 case 'up':
                     if (dy < -10 && Math.abs(dx) < currentRect.width * 1.5) {
                         isInDirection = true;
-                        score = -dy / Math.abs(dx + 1);
+                        score = -dy / (Math.abs(dx) + 1);
                     }
                     break;
                 case 'down':
                     if (dy > 10 && Math.abs(dx) < currentRect.width * 1.5) {
                         isInDirection = true;
-                        score = dy / Math.abs(dx + 1);
+                        score = dy / (Math.abs(dx) + 1);
                     }
                     break;
                 case 'left':
-                    if (dx < -10) {
+                    if (dx < -10 && Math.abs(dy) < currentRect.height * 1.5) {
                         isInDirection = true;
-                        score = -dx / Math.abs(dy + 1);
+                        score = -dx / (Math.abs(dy) + 1);
                     }
                     break;
                 case 'right':
-                    if (dx > 10) {
+                    if (dx > 10 && Math.abs(dy) < currentRect.height * 1.5) {
                         isInDirection = true;
-                        score = dx / Math.abs(dy + 1);
+                        score = dx / (Math.abs(dy) + 1);
                     }
                     break;
             }
             
             if (isInDirection && score > bestScore) {
                 bestScore = score;
-                bestCandidate = candidate.element;
+                bestCandidate = candidate;
             }
         });
         
         if (bestCandidate) {
             bestCandidate.focus();
-            bestCandidate.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-                inline: 'center'
-            });
-            
-            // Aktif satırı güncelle
-            const candidateIndex = focusableElements.findIndex(item => item.element === bestCandidate);
-            if (candidateIndex !== -1) {
-                currentItemIndex = candidateIndex;
-                currentRowIndex = focusableElements[candidateIndex].rowIndex;
-            }
+            currentIndex = focusableElements.indexOf(bestCandidate);
+            highlightElement(bestCandidate);
         }
     }
     
@@ -208,7 +189,7 @@ function initTVNavigation() {
                 e.preventDefault();
                 const activeElement = document.activeElement;
                 if (activeElement) {
-                    // Click event'ini tetikle
+                    // Tıklama işlemi
                     if (activeElement.click) {
                         activeElement.click();
                     } else if (activeElement.tagName === 'A') {
@@ -220,92 +201,225 @@ function initTVNavigation() {
             case 'Backspace':
             case 'Back':
             case 8:
-                e.preventDefault();
-                window.history.back();
-                break;
-                
             case 'Escape':
             case 'Esc':
             case 27:
                 e.preventDefault();
-                // Ana sayfada ESC için özel işlem
-                if (window.location.pathname.includes('index.html')) {
-                    // Menüyü kapat
-                    const mobileMenu = document.querySelector('.mobile-menu-toggle');
-                    if (mobileMenu && mobileMenu.getAttribute('aria-expanded') === 'true') {
-                        mobileMenu.click();
-                    }
-                } else {
-                    window.history.back();
+                window.history.back();
+                break;
+                
+            case 'MediaPlayPause':
+                e.preventDefault();
+                // Oynat/duraklat (ana sayfada özel işlev)
+                const firstVideo = document.querySelector('.content-item');
+                if (firstVideo) {
+                    firstVideo.click();
                 }
                 break;
         }
     }
     
-    // Tizen özel tuşlar
-    if (typeof tizen !== 'undefined') {
-        try {
-            if (tizen.tvinputdevice) {
-                const keys = [
-                    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-                    'Enter', 'Return', 'Back', 'Exit',
-                    'MediaPlayPause', 'MediaStop', 'MediaRewind', 'MediaFastForward'
-                ];
-                
-                keys.forEach(key => {
-                    try {
-                        tizen.tvinputdevice.registerKey(key);
-                    } catch (err) {
-                        console.warn("Key register error:", key, err);
-                    }
-                });
-                
-                // Tizen için ek event listener
-                document.addEventListener('keydown', function(e) {
-                    if (e.keyCode === 10009) { // RETURN
-                        e.preventDefault();
-                        window.history.back();
-                    }
-                    if (e.keyCode === 10182) { // EXIT
-                        e.preventDefault();
-                        if (typeof tizen !== 'undefined' && tizen.application) {
-                            tizen.application.getCurrentApplication().exit();
+    // Tizen TV için özel tuşlar
+    function setupTizenKeys() {
+        if (typeof tizen !== 'undefined') {
+            try {
+                if (tizen.tvinputdevice) {
+                    const keys = [
+                        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+                        'Enter', 'Return', 'Back', 'Exit',
+                        'MediaPlayPause', 'ColorF0Red', 'ColorF1Green'
+                    ];
+                    
+                    keys.forEach(key => {
+                        try {
+                            tizen.tvinputdevice.registerKey(key);
+                        } catch (err) {
+                            console.log("Tizen key register skipped:", key);
                         }
+                    });
+                    
+                    // Tizen özel event listener
+                    document.addEventListener('keydown', function(e) {
+                        if (e.keyCode === 10009) { // RETURN
+                            e.preventDefault();
+                            window.history.back();
+                        }
+                        if (e.keyCode === 10182) { // EXIT
+                            e.preventDefault();
+                            if (tizen.application) {
+                                tizen.application.getCurrentApplication().exit();
+                            }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.log("Tizen API not available");
+            }
+        }
+    }
+    
+    // WebOS için
+    function setupWebOSKeys() {
+        if (typeof webOS !== 'undefined') {
+            try {
+                webOS.service.request("luna://com.webos.service.tv.inputdevice", {
+                    method: "registerKey",
+                    parameters: {
+                        keys: ["Up", "Down", "Left", "Right", "Enter", "Back"]
                     }
                 });
+            } catch (err) {
+                console.log("WebOS API not available");
             }
-        } catch (err) {
-            console.warn("Tizen API error:", err);
         }
     }
     
     // Event listener'ları ekle
     document.addEventListener('keydown', handleTVKey);
     
-    // Mouse hareketlerinde imleci göster
+    // Mouse hareketinde imleci göster
     let mouseTimer;
     document.addEventListener('mousemove', function() {
         document.body.style.cursor = 'auto';
         clearTimeout(mouseTimer);
         mouseTimer = setTimeout(function() {
             document.body.style.cursor = 'none';
-        }, 3000);
+        }, 2000);
     });
     
-    // Sayfa yüklendiğinde odaklan
+    // TV tuşlarını kur
+    setupTizenKeys();
+    setupWebOSKeys();
+    
+    // Başlangıçta odaklan
     setTimeout(focusFirstElement, 1000);
     
     // DOM değişikliklerini izle
     const observer = new MutationObserver(function() {
-        setTimeout(updateFocusableElements, 100);
+        updateFocusableElements();
     });
+    
     observer.observe(document.body, {
         childList: true,
         subtree: true
     });
+    
+    // Sayfa değişikliklerinde odaklan
+    window.addEventListener('pageshow', function() {
+        setTimeout(updateFocusableElements, 500);
+    });
 }
 
-function initNormalNavigation() {
-    // Mevcut navigasyon kodunuz buraya
-    // ... (mevcut kodunuz)
+// TV için stil ayarları
+function initTVStyle() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .tv-mode {
+            cursor: none !important;
+        }
+        
+        .tv-mode .tv-focused {
+            transform: scale(1.05);
+            transition: transform 0.2s ease;
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.6);
+            z-index: 10;
+            position: relative;
+        }
+        
+        .tv-mode .content-item:focus {
+            outline: 4px solid #e50914 !important;
+            outline-offset: 4px !important;
+        }
+        
+        .tv-mode button:focus,
+        .tv-mode a:focus {
+            outline: 3px solid #e50914 !important;
+            outline-offset: 3px !important;
+            background-color: rgba(229, 9, 20, 0.1);
+        }
+        
+        .tv-mode .quick-link-card:focus {
+            background-color: rgba(229, 9, 20, 0.15);
+            transform: scale(1.05);
+        }
+        
+        .tv-mode ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .tv-mode {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .tv-mode body {
+            font-size: 22px;
+        }
+        
+        .tv-mode .item-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .tv-mode .quick-link-card {
+            min-height: 150px;
+            min-width: 200px;
+        }
+    `;
+    document.head.appendChild(style);
 }
+
+// Normal navigasyon (mevcut kodunuz)
+function initNormalNavigation() {
+    // Mevcut normal navigasyon kodunuz buraya
+    // Örnek:
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileMenuClose = document.querySelector('.mobile-menu-close');
+    const mainNav = document.getElementById('main-nav');
+    
+    if (mobileMenuToggle && mainNav) {
+        mobileMenuToggle.addEventListener('click', function() {
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            this.setAttribute('aria-expanded', !isExpanded);
+            mainNav.classList.toggle('active');
+        });
+    }
+    
+    if (mobileMenuClose && mainNav) {
+        mobileMenuClose.addEventListener('click', function() {
+            mainNav.classList.remove('active');
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+        });
+    }
+    
+    // Header scroll efekti
+    window.addEventListener('scroll', function() {
+        const header = document.getElementById('header');
+        if (window.scrollY > 50) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    });
+}
+
+// Global fonksiyonlar
+window.goToSearch = function() {
+    window.location.href = 'ara.html';
+};
+
+window.goToFilms = function() {
+    window.location.href = 'film.html';
+};
+
+window.goToSeries = function() {
+    window.location.href = 'dizi.html';
+};
+
+window.goToDocumentaries = function() {
+    window.location.href = 'belgesel.html';
+};
+
+window.goToLiveTV = function() {
+    window.location.href = 'canli.html';
+};
