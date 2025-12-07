@@ -302,35 +302,10 @@ nav ul li a.active:hover{background-color:var( --primary-hover)}
 }
 
 /* TV Navigasyon için genel stiller */
-.tv-mode {
-    cursor: none !important;
-}
-
-.tv-mode *:focus {
-    outline: 4px solid #e50914 !important;
-    outline-offset: 4px !important;
-    box-shadow: 0 0 20px rgba(229, 9, 20, 0.5) !important;
-}
-
-/* Scrollbar gizleme TV'de */
-.tv-mode ::-webkit-scrollbar {
-    display: none;
-}
-
-.tv-mode {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-
-/* TV için büyük fontlar */
-.tv-mode body {
-    font-size: 20px;
-}
-
-/* TV için yavaş geçişler (göz yormamak için) */
-.tv-mode * {
-    transition: all 0.3s ease !important;
-}
+.tv-mode *:focus {outline: 4px solid #e50914 !important;outline-offset: 4px !important;box-shadow: 0 0 20px rgba(229, 9, 20, 0.5) !important;}
+.tv-mode ::-webkit-scrollbar {display: none;}
+.tv-mode {-ms-overflow-style: none;scrollbar-width: none;}
+.tv-mode body {font-size: 20px;}
 
 .flex {display: flex;}
 .hidden {display: none;}
