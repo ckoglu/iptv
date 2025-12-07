@@ -227,18 +227,38 @@ class NetflixPlayer {
         
         this.showLoading();
         
-        // HLS kontrolü
-        const urlLower = videoUrl.toLowerCase();
+        // URL'yi temizle ve kontrol et
+        const cleanVideoUrl = this.cleanVideoUrl(videoUrl);
+        
+        // Format kontrolü - MP4 için özel işlem
+        const urlLower = cleanVideoUrl.toLowerCase();
         this.isHLS = urlLower.includes('.m3u8') || 
                      urlLower.includes('.m3u') || 
                      urlLower.includes('/hls/') ||
                      urlLower.includes('master.m3u8');
         
         if (this.isHLS) {
-            this.setupHLSVideo(videoUrl);
+            this.setupHLSVideo(cleanVideoUrl);
         } else {
-            this.setupDirectVideo(videoUrl);
+            this.setupDirectVideo(cleanVideoUrl);
         }
+    }
+
+    cleanVideoUrl(url) {
+        // URL'yi decode et
+        let cleanUrl = decodeURIComponent(url);
+        
+        // Boşlukları temizle
+        cleanUrl = cleanUrl.replace(/\s/g, '');
+        
+        // MP4 için özel kontrol
+        if (cleanUrl.toLowerCase().includes('.mp4')) {
+            // MP4 URL'sinde sorunlu karakterleri temizle
+            cleanUrl = cleanUrl.split('?')[0]; // Query parametrelerini ayır
+            cleanUrl = cleanUrl.split('#')[0]; // Fragment'ı ayır
+        }
+        
+        return cleanUrl;
     }
     
     // HLS video kurulumu
@@ -376,13 +396,106 @@ class NetflixPlayer {
     
     // Direkt video
     setupDirectVideo(videoUrl) {
-        this.videoElement.src = videoUrl;
-        this.videoElement.addEventListener('loadeddata', () => {
-            this.hideLoading();
-            this.videoElement.play().catch(console.log);
-        }, { once: true });
-        this.videoElement.addEventListener('error', () => this.handlePlayerError(), { once: true });
+        console.log("Setting up direct video:", videoUrl);
+        
+        // Video elementini tamamen sıfırla
+        this.videoElement.src = '';
         this.videoElement.load();
+        
+        // Yeni source element oluştur
+        const sourceElement = document.createElement('source');
+        sourceElement.src = videoUrl;
+        
+        // Formatı belirle ve type ayarla
+        const urlLower = videoUrl.toLowerCase();
+        if (urlLower.includes('.mp4')) {
+            // MP4 için farklı codec denemeleri
+            sourceElement.type = 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+            
+            // Alternatif codec için ikinci source
+            const sourceElement2 = document.createElement('source');
+            sourceElement2.src = videoUrl;
+            sourceElement2.type = 'video/mp4; codecs="h264, aac"';
+            
+            this.videoElement.appendChild(sourceElement);
+            this.videoElement.appendChild(sourceElement2);
+            
+        } else if (urlLower.includes('.webm')) {
+            sourceElement.type = 'video/webm; codecs="vp8, vorbis"';
+            this.videoElement.appendChild(sourceElement);
+            
+        } else if (urlLower.includes('.ogg') || urlLower.includes('.ogv')) {
+            sourceElement.type = 'video/ogg; codecs="theora, vorbis"';
+            this.videoElement.appendChild(sourceElement);
+            
+        } else {
+            // Format bilinmiyorsa generic type
+            sourceElement.type = 'video/mp4';
+            this.videoElement.appendChild(sourceElement);
+        }
+        
+        // Video için gerekli attribute'lar
+        this.videoElement.setAttribute('preload', 'auto');
+        this.videoElement.setAttribute('playsinline', '');
+        this.videoElement.setAttribute('webkit-playsinline', '');
+        this.videoElement.setAttribute('x-webkit-airplay', 'allow');
+        
+        // Event listener'ları ekle
+        const errorHandler = (e) => {
+            console.error('Direct video error:', e);
+            this.handlePlayerError();
+        };
+        
+        const loadedHandler = () => {
+            console.log('Direct video loaded successfully');
+            this.hideLoading();
+            
+            // TV'de otomatik oynatmayı dene
+            if (this.isTV) {
+                setTimeout(() => {
+                    this.videoElement.play().catch(e => {
+                        console.log('Auto-play on TV failed, showing controls');
+                        this.showControls();
+                    });
+                }, 500);
+            }
+        };
+        
+        const canPlayHandler = () => {
+            console.log('Direct video can play');
+            this.hideLoading();
+        };
+        
+        // Event listener'ları ekle
+        this.videoElement.addEventListener('loadeddata', loadedHandler, { once: true });
+        this.videoElement.addEventListener('canplay', canPlayHandler, { once: true });
+        this.videoElement.addEventListener('error', errorHandler, { once: true });
+        
+        // Mobil ve TV için özel timeout
+        const loadTimeout = setTimeout(() => {
+            console.log('Video load timeout, trying to play anyway');
+            this.videoElement.play().catch(e => {
+                console.log('Timeout play failed:', e);
+                this.showControls();
+            });
+        }, 10000); // 10 saniye timeout
+        
+        // Yüklendiğinde timeout'u temizle
+        this.videoElement.addEventListener('loadeddata', () => {
+            clearTimeout(loadTimeout);
+        }, { once: true });
+        
+        // Video'yu yükle
+        console.log('Loading direct video...');
+        this.videoElement.load();
+        
+        // 2 saniye sonra yüklenmediyse kontrol et
+        setTimeout(() => {
+            if (this.videoElement.readyState < 1) {
+                console.log('Video still not loading, trying alternative approach');
+                this.tryAlternativePlayback(videoUrl);
+            }
+        }, 2000);
     }
     
     // Oynatma hızı menüsü
@@ -449,6 +562,74 @@ class NetflixPlayer {
                 console.log("Tizen API not available");
             }
         }
+    }
+
+    // Alternatif oynatma yöntemi - YENİ EKLENDİ
+    tryAlternativePlayback(videoUrl) {
+        console.log('Trying alternative playback method');
+        
+        // Video elementini komple değiştir
+        const newVideo = document.createElement('video');
+        newVideo.id = 'videoElement';
+        newVideo.className = 'netflix-video';
+        newVideo.setAttribute('playsinline', '');
+        newVideo.setAttribute('webkit-playsinline', '');
+        newVideo.setAttribute('preload', 'auto');
+        
+        // Mevcut videoyu değiştir
+        this.videoElement.parentNode.replaceChild(newVideo, this.videoElement);
+        this.videoElement = newVideo;
+        
+        // Source oluştur (daha basit)
+        const source = document.createElement('source');
+        source.src = videoUrl;
+        
+        // Format kontrolü
+        if (videoUrl.toLowerCase().includes('.mp4')) {
+            source.type = 'video/mp4';
+        }
+        
+        newVideo.appendChild(source);
+        
+        // Yeni event listener'lar
+        newVideo.addEventListener('loadeddata', () => {
+            console.log('Alternative video loaded');
+            this.hideLoading();
+            newVideo.play().catch(e => {
+                console.log('Alternative play failed:', e);
+                this.showControls();
+            });
+        }, { once: true });
+        
+        newVideo.addEventListener('error', (e) => {
+            console.error('Alternative video error:', e);
+            this.showError('Video formatı desteklenmiyor. MP4 formatında bir video deneyin.');
+        }, { once: true });
+        
+        // Video'yu yükle
+        newVideo.load();
+        
+        // Event listener'ları yeniden bağla
+        setTimeout(() => {
+            this.setupVideoEventListeners();
+        }, 100);
+    }
+    
+    // Video event listener'larını yeniden bağla - YENİ EKLENDİ
+    setupVideoEventListeners() {
+        this.videoElement.addEventListener('play', () => this.onPlay());
+        this.videoElement.addEventListener('pause', () => this.onPause());
+        this.videoElement.addEventListener('timeupdate', () => this.updateProgress());
+        this.videoElement.addEventListener('loadedmetadata', () => this.updateDuration());
+        this.videoElement.addEventListener('waiting', () => this.showLoading());
+        this.videoElement.addEventListener('playing', () => this.hideLoading());
+        this.videoElement.addEventListener('volumechange', () => this.updateVolumeIcon());
+        this.videoElement.addEventListener('error', () => this.handlePlayerError());
+        
+        // Video tıklama ile oynat/duraklat
+        this.videoElement.addEventListener('click', () => {
+            this.togglePlay();
+        });
     }
     
     // Event listener'ları kur
@@ -1250,6 +1431,8 @@ class NetflixPlayer {
     // Video hatası
     handlePlayerError() {
         const error = this.videoElement.error;
+        console.error('Video error details:', error);
+        
         let message = 'Video yüklenirken hata oluştu.';
         
         if (error) {
@@ -1261,15 +1444,30 @@ class NetflixPlayer {
                     message = 'Ağ hatası oluştu. İnternet bağlantınızı kontrol edin.';
                     break;
                 case error.MEDIA_ERR_DECODE:
-                    message = 'Video decode hatası. Format desteklenmiyor.';
+                    message = 'Video codec hatası. Tarayıcınız bu video formatını desteklemiyor.';
+                    // MP4 codec hatası için özel mesaj
+                    if (this.videoElement.src.toLowerCase().includes('.mp4')) {
+                        message += ' MP4 video codec\'i desteklenmiyor olabilir.';
+                    }
                     break;
                 case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
                     message = 'Video formatı desteklenmiyor.';
+                    // Format önerisi
+                    if (this.videoElement.src.toLowerCase().includes('.mp4')) {
+                        message += ' Lütfen H.264 codec\'li bir MP4 video kullanın.';
+                    }
                     break;
             }
         }
         
         this.showError(message);
+        
+        // Alternatif oynatma denemesi
+        if (this.videoElement.src && !this.videoElement.src.includes('blob:')) {
+            setTimeout(() => {
+                this.tryAlternativePlayback(this.videoElement.src);
+            }, 3000);
+        }
     }
     
     // Kritik HLS hatası
@@ -1297,6 +1495,27 @@ class NetflixPlayer {
         this.videoElement.src = '';
         this.videoElement.load();
     }
+}
+
+// MP4 format desteği kontrolü - YENİ EKLENDİ
+checkMP4Support() {
+    const video = document.createElement('video');
+    const mp4Support = {
+        h264: video.canPlayType('video/mp4; codecs="avc1.42E01E"'),
+        h264_high: video.canPlayType('video/mp4; codecs="avc1.64001E"'),
+        h265: video.canPlayType('video/mp4; codecs="hev1.1.6.L93.90"'),
+        aac: video.canPlayType('video/mp4; codecs="mp4a.40.2"')
+    };
+    
+    console.log('MP4 support check:', mp4Support);
+    
+    // Desteklenmeyen codec varsa uyarı
+    if (!mp4Support.h264 && !mp4Support.h264_high) {
+        console.warn('H.264 codec not supported');
+        return false;
+    }
+    
+    return true;
 }
 
 // Global fonksiyonlar
@@ -1366,3 +1585,4 @@ window.debugPlayer = function() {
     console.log('- Video currentTime:', window.netflixPlayer.videoElement.currentTime);
     console.log('- Video duration:', window.netflixPlayer.videoElement.duration);
 };
+
