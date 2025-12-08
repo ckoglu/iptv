@@ -95,16 +95,47 @@ class NetflixPlayer {
     
         this.showLoading();
     
-        // HLS kontrolü
+        // HLS kontrolü - daha gelişmiş
         const urlLower = videoUrl.toLowerCase();
         this.isHLS = urlLower.includes('.m3u8') || 
-                     urlLower.includes('/hls/');
+                     urlLower.includes('/hls/') ||
+                     urlLower.includes('m3u8?') ||
+                     urlLower.includes('.m3u') || // .m3u uzantılı dosyalar da olabilir
+                     this.isHLSStream(videoUrl);
+    
+        console.log("Video URL:", videoUrl);
+        console.log("Is HLS:", this.isHLS);
+        console.log("Is TV:", this.isTV);
     
         if (this.isHLS) {
+            // Smart TV'ler için HLS.js ön yükleme
+            if (this.isTV && typeof Hls === 'undefined') {
+                console.log("Smart TV detected, preloading HLS.js...");
+                // setupHLSVideo fonksiyonu zaten HLS.js'i yükleyecek
+            }
             this.setupHLSVideo(videoUrl);
         } else {
-            this.(videoUrl);
+            this.setupDirectVideo(videoUrl);
         }
+    }
+    
+    // Yeni helper fonksiyonu ekle (class içinde)
+    isHLSStream(url) {
+        // URL'den HLS stream olup olmadığını kontrol et
+        const hlsPatterns = [
+            /\.m3u8/i,
+            /\/hls\//i,
+            /\.m3u/i,
+            /manifest\.m3u8/i,
+            /index\.m3u8/i,
+            /live\.m3u8/i,
+            /\.m3u8\?/i,
+            /format=m3u8/i,
+            /type=m3u8/i,
+            /hls_manifest/i
+        ];
+        
+        return hlsPatterns.some(pattern => pattern.test(url));
     }
     
     setupDirectVideo(videoUrl) {
@@ -228,56 +259,268 @@ class NetflixPlayer {
     }
     
     setupHLSVideo(videoUrl) {
+        // HLS.js yüklü mü kontrol et
         if (typeof Hls === 'undefined') {
-            this.showError('HLS desteği yüklenemedi.');
+            // Smart TV'ler için HLS.js'i dinamik yükle
+            this.loadHlsJS().then(() => {
+                this.initializeHLS(videoUrl);
+            }).catch(() => {
+                // Safari ve bazı Smart TV'ler için native HLS
+                this.setupNativeHLS(videoUrl);
+            });
             return;
         }
+        
+        // HLS.js zaten yüklüyse
+        this.initializeHLS(videoUrl);
+    }
+
+    // Yeni helper fonksiyonları ekle (class içinde)
+    loadHlsJS() {
+        return new Promise((resolve, reject) => {
+            if (typeof Hls !== 'undefined') {
+                resolve();
+                return;
+            }
+            
+            console.log("Loading HLS.js for Smart TV...");
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+            script.onload = () => {
+                console.log("HLS.js loaded successfully");
+                // HLS.js'in tamamen yüklenmesini bekle
+                setTimeout(resolve, 100);
+            };
+            script.onerror = () => {
+                console.log("Failed to load HLS.js, trying native HLS");
+                reject();
+            };
+            
+            // Async yükleme
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        });
+    }
     
-        if (Hls.isSupported()) {
-            try {
-                if (this.hls) {
-                    this.hls.destroy();
-                }
+    initializeHLS(videoUrl) {
+        if (!Hls.isSupported()) {
+            console.log("HLS.js not supported, trying native HLS");
+            this.setupNativeHLS(videoUrl);
+            return;
+        }
+        
+        try {
+            // Eski HLS instance'ını temizle
+            if (this.hls) {
+                this.hls.destroy();
+            }
+            
+            // Smart TV'ler için optimize edilmiş HLS config
+            const hlsConfig = {
+                enableWorker: true,
+                lowLatencyMode: true,
+                backBufferLength: 90,
+                maxBufferLength: 30,
+                maxMaxBufferLength: 60,
+                maxBufferSize: 60 * 1000 * 1000, // 60MB
+                maxBufferHole: 0.5,
+                maxFragLookUpTolerance: 0.25,
+                liveSyncDurationCount: 3,
+                liveMaxLatencyDurationCount: 10,
+                // Smart TV uyumluluk ayarları
+                manifestLoadingTimeOut: 10000,
+                manifestLoadingMaxRetry: 3,
+                manifestLoadingRetryDelay: 500,
+                levelLoadingTimeOut: 10000,
+                levelLoadingMaxRetry: 3,
+                levelLoadingRetryDelay: 500,
+                fragLoadingTimeOut: 20000,
+                fragLoadingMaxRetry: 6,
+                fragLoadingRetryDelay: 500,
+                startFragPrefetch: true,
+                testBandwidth: true
+            };
+            
+            console.log("Creating HLS instance with Smart TV config");
+            this.hls = new Hls(hlsConfig);
+            
+            // HLS event listeners
+            this.hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+                console.log("HLS manifest parsed, levels:", data.levels);
+                this.hideLoading();
                 
-                this.hls = new Hls({
-                    enableWorker: true,
-                    lowLatencyMode: true
-                });
-                
-                this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    this.hideLoading();
-                    this.videoElement.play().catch(e => {
-                        console.log("HLS auto-play blocked");
+                // Smart TV'lerde otomatik oynatma
+                const playPromise = this.videoElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log("Smart TV HLS: Auto-play blocked");
                         this.showControls();
+                        
+                        // TV modunda alternatif başlatma
+                        if (this.isTV) {
+                            this.videoElement.muted = true;
+                            setTimeout(() => {
+                                this.videoElement.play().catch(() => {
+                                    console.log("Smart TV: Manual play required");
+                                });
+                            }, 1000);
+                        }
                     });
-                });
+                }
+            });
+            
+            this.hls.on(Hls.Events.LEVEL_LOADED, (event, data) => {
+                console.log("HLS level loaded:", data.level);
+            });
+            
+            this.hls.on(Hls.Events.FRAG_LOADED, (event, data) => {
+                console.log("HLS fragment loaded:", data.frag.url);
+            });
+            
+            this.hls.on(Hls.Events.ERROR, (event, data) => {
+                console.error('HLS Error:', data);
                 
-                this.hls.on(Hls.Events.ERROR, (event, data) => {
-                    console.error('HLS Error:', data);
-                    if (data.fatal) {
-                        this.showError('HLS video yüklenemedi.');
+                // Smart TV'ler için hata yönetimi
+                if (data.fatal) {
+                    switch(data.type) {
+                        case Hls.ErrorTypes.NETWORK_ERROR:
+                            console.error("HLS Network Error, trying to recover...");
+                            this.hls.startLoad();
+                            break;
+                        case Hls.ErrorTypes.MEDIA_ERROR:
+                            console.error("HLS Media Error, trying to recover...");
+                            this.hls.recoverMediaError();
+                            break;
+                        default:
+                            console.error("HLS Fatal Error, destroying...");
+                            this.showError('HLS video yüklenemedi. Native player deneniyor...');
+                            this.hls.destroy();
+                            
+                            // Fallback to native HLS
+                            setTimeout(() => {
+                                this.setupNativeHLS(videoUrl);
+                            }, 1000);
+                            break;
+                    }
+                }
+            });
+            
+            this.hls.on(Hls.Events.DESTROYING, () => {
+                console.log("HLS instance destroying");
+            });
+            
+            // Video source'u yükle
+            console.log("Loading HLS source:", videoUrl);
+            this.hls.loadSource(videoUrl);
+            this.hls.attachMedia(this.videoElement);
+            
+            // Smart TV'ler için ön yükleme
+            if (this.isTV) {
+                this.hls.startLoad(-1); // Ön yükleme başlat
+            }
+            
+        } catch (error) {
+            console.error('HLS Initialization Error:', error);
+            this.showError('HLS oynatıcı başlatılamadı. Native player deneniyor...');
+            
+            // Fallback to native HLS
+            setTimeout(() => {
+                this.setupNativeHLS(videoUrl);
+            }, 500);
+        }
+    }
+    
+    setupNativeHLS(videoUrl) {
+        console.log("Setting up native HLS for Smart TV");
+        
+        // Video elementini temizle
+        this.videoElement.src = '';
+        this.videoElement.load();
+        
+        // Smart TV'ler için native HLS ayarları
+        this.videoElement.src = videoUrl;
+        
+        // HLS için MIME type belirt (Smart TV'ler için önemli)
+        this.videoElement.setAttribute('type', 'application/vnd.apple.mpegurl');
+        
+        // Smart TV uyumluluğu için diğer ayarlar
+        this.videoElement.setAttribute('preload', 'auto');
+        this.videoElement.setAttribute('playsinline', '');
+        this.videoElement.setAttribute('webkit-playsinline', '');
+        this.videoElement.crossOrigin = 'anonymous';
+        
+        // Event listeners for native HLS
+        const handleLoaded = () => {
+            console.log("Native HLS loaded on Smart TV");
+            this.hideLoading();
+            
+            // Smart TV'ler için otomatik oynatma denemesi
+            const playPromise = this.videoElement.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => {
+                    console.log("Native HLS: Auto-play blocked on Smart TV");
+                    this.showControls();
+                    
+                    // TV modunda alternatif
+                    if (this.isTV) {
+                        this.videoElement.muted = true;
+                        setTimeout(() => {
+                            this.videoElement.play().catch(() => {
+                                console.log("Smart TV Native HLS: Manual play required");
+                            });
+                        }, 1000);
                     }
                 });
-                
-                this.hls.loadSource(videoUrl);
-                this.hls.attachMedia(this.videoElement);
-            } catch (error) {
-                console.error('HLS Error:', error);
-                this.showError('HLS oynatıcı başlatılamadı.');
             }
-        } else if (this.videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-            // Safari için native HLS
-            this.videoElement.src = videoUrl;
-            this.videoElement.addEventListener('loadeddata', () => {
-                this.hideLoading();
-                this.videoElement.play().catch(console.log);
-            }, { once: true });
-            this.videoElement.addEventListener('error', () => {
-                this.showError('HLS video yüklenemedi.');
-            }, { once: true });
-            this.videoElement.load();
-        } else {
-            this.showError('Tarayıcınız HLS formatını desteklemiyor.');
+        };
+        
+        this.videoElement.addEventListener('loadeddata', handleLoaded, { once: true });
+        
+        // Canplaythrough event'i de dinle
+        this.videoElement.addEventListener('canplaythrough', () => {
+            console.log("Native HLS can play through on Smart TV");
+            this.hideLoading();
+        }, { once: true });
+        
+        // Progress event'i (buffering için)
+        this.videoElement.addEventListener('progress', () => {
+            if (this.videoElement.buffered.length > 0) {
+                const bufferedEnd = this.videoElement.buffered.end(this.videoElement.buffered.length - 1);
+                console.log("Native HLS buffered:", bufferedEnd, "seconds");
+            }
+        });
+        
+        this.videoElement.addEventListener('error', (e) => {
+            console.error("Native HLS Error on Smart TV:", e, this.videoElement.error);
+            
+            if (this.videoElement.error) {
+                console.error("Error code:", this.videoElement.error.code);
+                console.error("Error message:", this.videoElement.error.message);
+                
+                // M3U8 için özel hata mesajı
+                if (videoUrl.includes('.m3u8')) {
+                    this.showError('M3U8/HLS stream yüklenemedi. Stream geçerli olmayabilir veya Smart TV tarafından desteklenmiyor.');
+                } else {
+                    this.showError('Video yüklenirken hata oluştu.');
+                }
+            }
+        }, { once: true });
+        
+        // Video'yu yükle
+        this.videoElement.load();
+        
+        // Smart TV'ler için ek ön yükleme
+        if (this.isTV) {
+            console.log("Smart TV Native HLS: Preloading...");
+            this.videoElement.preload = "auto";
+            
+            // Buffer kontrolü
+            setTimeout(() => {
+                if (this.videoElement.readyState >= 3) {
+                    console.log("Smart TV Native HLS: Ready to play");
+                }
+            }, 2000);
         }
     }
     
@@ -865,4 +1108,5 @@ window.addEventListener('beforeunload', () => {
         window.netflixPlayer.destroy();
     }
 });
+
 
