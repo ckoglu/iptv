@@ -103,7 +103,7 @@ class NetflixPlayer {
         if (this.isHLS) {
             this.setupHLSVideo(videoUrl);
         } else {
-            this.setupDirectVideo(videoUrl);
+            this.(videoUrl);
         }
     }
     
@@ -114,37 +114,117 @@ class NetflixPlayer {
         this.videoElement.src = '';
         this.videoElement.load();
         
+        // Smart TV'ler için MP4 codec kontrolü ve MIME type belirtme
+        const videoUrlLower = videoUrl.toLowerCase();
+        
+        // MP4 video için özel işleme
+        if (videoUrlLower.includes('.mp4') || videoUrlLower.includes('.m4v')) {
+            // Smart TV'ler için video tipini açıkça belirt
+            const videoType = this.getVideoType(videoUrlLower);
+            
+            // Video elementine type attribute ekle
+            this.videoElement.setAttribute('type', videoType || 'video/mp4');
+            console.log("Setting video type for Smart TV:", videoType || 'video/mp4');
+        }
+        
         // URL'yi doğrudan ata
         this.videoElement.src = videoUrl;
         
-        // Gerekli attribute'lar
+        // Smart TV'ler için gerekli attribute'lar
         this.videoElement.setAttribute('preload', 'auto');
         this.videoElement.setAttribute('playsinline', '');
         this.videoElement.setAttribute('webkit-playsinline', '');
         
+        // Smart TV uyumluluğu için crossOrigin ayarı
+        this.videoElement.crossOrigin = 'anonymous';
+        
+        // Video formatını otomatik algılaması için
+        this.videoElement.setAttribute('controls', 'false'); // Kontrollerimizi kullanıyoruz
+        
         // Event listener'lar
-        this.videoElement.addEventListener('loadeddata', () => {
-            console.log("Video loaded");
+        const videoLoaded = () => {
+            console.log("Video loaded for Smart TV");
             this.hideLoading();
             
-            // Otomatik oynat
-            this.videoElement.play().catch(e => {
-                console.log("Auto-play blocked");
-                this.showControls();
-            });
-        }, { once: true });
+            // Smart TV'lerde bazen play() promise'i çalışmıyor
+            const playPromise = this.videoElement.play();
+            
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => {
+                        console.log("Smart TV: Video playing successfully");
+                    })
+                    .catch(e => {
+                        console.log("Smart TV: Auto-play blocked, showing controls");
+                        this.showControls();
+                        
+                        // Smart TV'ler için alternatif başlatma
+                        if (this.isTV) {
+                            console.log("Smart TV mode detected, using alternative play method");
+                            // TV modunda kullanıcı etkileşimi bekle
+                            this.videoElement.muted = true;
+                            setTimeout(() => {
+                                this.videoElement.play().catch(console.log);
+                            }, 1000);
+                        }
+                    });
+            }
+        };
         
-        this.videoElement.addEventListener('canplay', () => {
+        this.videoElement.addEventListener('loadeddata', videoLoaded, { once: true });
+        
+        // Canplaythrough event'ini de dinle (Smart TV'ler için daha iyi)
+        this.videoElement.addEventListener('canplaythrough', () => {
+            console.log("Smart TV: Video can play through");
             this.hideLoading();
         }, { once: true });
         
         this.videoElement.addEventListener('error', (e) => {
-            console.error("Video error:", e);
+            console.error("Smart TV Video error:", e, this.videoElement.error);
+            
+            // Hata detaylarını logla
+            if (this.videoElement.error) {
+                console.error("Error code:", this.videoElement.error.code);
+                console.error("Error message:", this.videoElement.error.message);
+            }
+            
             this.handlePlayerError();
         }, { once: true });
         
         // Video'yu yükle
         this.videoElement.load();
+        
+        // Smart TV'ler için ön yükleme
+        if (this.isTV) {
+            console.log("Smart TV: Preloading video...");
+            this.videoElement.preload = "auto";
+            
+            // Smart TV'ler için buffer ayarı
+            setTimeout(() => {
+                if (this.videoElement.buffered.length > 0) {
+                    console.log("Smart TV: Buffered", this.videoElement.buffered.end(0), "seconds");
+                }
+            }, 1000);
+        }
+    }
+
+    getVideoType(videoUrl) {
+        if (videoUrl.includes('.mp4')) {
+            // Codec bilgisi olup olmadığını kontrol et
+            if (videoUrl.includes('h264') || videoUrl.includes('avc')) {
+                return 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+            } else if (videoUrl.includes('h265') || videoUrl.includes('hevc')) {
+                return 'video/mp4; codecs="hev1.1.6.L93.B0"';
+            } else {
+                // Varsayılan olarak H.264 belirt (Smart TV'lerde en yaygın)
+                return 'video/mp4; codecs="avc1.42E01E, mp4a.40.2"';
+            }
+        } else if (videoUrl.includes('.webm')) {
+            return 'video/webm; codecs="vp8, vorbis"';
+        } else if (videoUrl.includes('.ogv') || videoUrl.includes('.ogg')) {
+            return 'video/ogg; codecs="theora, vorbis"';
+        }
+        return null;
     }
     
     setupHLSVideo(videoUrl) {
@@ -785,3 +865,4 @@ window.addEventListener('beforeunload', () => {
         window.netflixPlayer.destroy();
     }
 });
+
