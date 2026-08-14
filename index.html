@@ -1,154 +1,51 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV - Ana Sayfa</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0c10">
+<meta name="description" content="Film, dizi, belgesel ve canlı TV.">
+<title>IPTV</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
-    <header id="header">
-        <a class="logo" href="index.html">IPTV</a>
 
-        <nav id="main-nav">
-            <button class="mobile-menu-close" aria-label="Menüyü kapat">
-                <i class="fas fa-times"></i>
-            </button>
-            <ul>
-                <li><a href="index.html" class="active">Ana Sayfa</a></li>
-                <li><a href="film.html">Film</a></li>
-                <li><a href="dizi.html">Dizi</a></li>
-                <li><a href="belgesel.html">Belgesel</a></li>
-                <li><a href="canli.html">Canlı</a></li>
-                <li><a href="ara.html">Ara</a></li>
-            </ul>
-        </nav>
+<header id="hdr">
+  <a class="logo focusable" href="#/">IPTV</a>
+  <nav id="nav"></nav>
+</header>
 
-        <div class="header-right-group">
-            <div class="user-actions">
-                <div class="search-icon" onclick="goToSearch()">
-                    <i class="fas fa-search"></i>
-                </div>
-                <div class="profile">
-                    <i class="fas fa-user"></i>
-                </div>
-            </div>
-            
-            <button class="mobile-menu-toggle" aria-label="Menü" aria-expanded="false" aria-controls="main-nav">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-    </header>
+<main id="view"></main>
 
-    <section class="hero">
-        <div class="hero-backdrop"></div>
-        <div class="hero-content">
-            <h1 class="hero-title">Sınırsız Eğlence</h1>
-            <p class="hero-description">Binlerce film, dizi ve canlı TV kanalı. İstediğin zaman, istediğin yerde izle. Yeni içerikler sürekli güncelleniyor.</p>
-            <section class="quick-links-section">
-                <div class="quick-links-grid">
-                    <div class="quick-link-card" onclick="goToFilms()">
-                        <div class="card-icon"><i class="fas fa-video"></i></div>
-                        <div class="card-title">Filmler</div>
-                    </div>
-                    <div class="quick-link-card" onclick="goToSeries()">
-                        <div class="card-icon"><i class="fas fa-compact-disc"></i></div>
-                        <div class="card-title">Diziler</div>
-                    </div>
-                    <div class="quick-link-card" onclick="goToDocumentaries()">
-                        <div class="card-icon"><i class="fas fa-camera"></i></div>
-                        <div class="card-title">Belgeseller</div>
-                    </div>
-                    <div class="quick-link-card" onclick="goToLiveTV()">
-                        <div class="card-icon"><i class="fas fa-satellite-dish"></i></div>
-                        <div class="card-title">Canlı TV</div>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </section>
+<section id="player" class="player" hidden>
+  <video id="video" playsinline webkit-playsinline></video>
+  <div class="p-top">
+    <button class="p-btn focusable" id="pBack" aria-label="Geri">&#8592;</button>
+    <span id="pTitle"></span>
+    <span class="live-badge" id="pLive" hidden>CANLI</span>
+  </div>
+  <div class="p-center"><div class="spin" id="pSpin"></div></div>
+  <div class="p-bottom">
+    <div class="bar" id="pBar"><div class="fill" id="pFill"></div></div>
+    <div class="p-row">
+      <button class="p-btn focusable" id="pRw" aria-label="10 saniye geri">&#8630;</button>
+      <button class="p-btn big focusable" id="pPlay" aria-label="Oynat">&#9654;</button>
+      <button class="p-btn focusable" id="pFf" aria-label="10 saniye ileri">&#8631;</button>
+      <span class="p-time"><b id="pCur">0:00</b> / <b id="pDur">0:00</b></span>
+      <button class="p-btn focusable" id="pFull" aria-label="Tam ekran">&#9974;</button>
+    </div>
+  </div>
+  <div class="p-error" id="pError" hidden>
+    <p id="pErrorText">Yayın açılamadı.</p>
+    <button class="btn focusable" id="pRetry">Tekrar dene</button>
+    <button class="btn focusable" id="pExit">Geri dön</button>
+  </div>
+</section>
 
-    <section class="content-section">
-        <div class="section-header">
-            <h2 class="section-title">En Son İzlenenler</h2>
-            <div class="scroll-buttons">
-                <button class="scroll-btn scroll-left" data-target="recently-watched"><i class="fas fa-chevron-left"></i></button>
-                <button class="scroll-btn scroll-right" data-target="recently-watched"><i class="fas fa-chevron-right"></i></button>
-            </div>
-        </div>
-        <div class="content-row" id="recently-watched"></div>
-    </section>
+<div id="toast" class="toast" hidden></div>
 
-    <section class="content-section">
-        <div class="section-header">
-            <h2 class="section-title">Filmler</h2>
-            <div class="scroll-buttons">
-                <button class="scroll-btn scroll-btn-all" onclick="goToFilms()">hepsini gör</button>
-                <button class="scroll-btn scroll-left" data-target="popular-movies"><i class="fas fa-chevron-left"></i></button>
-                <button class="scroll-btn scroll-right" data-target="popular-movies"><i class="fas fa-chevron-right"></i></button>
-            </div>
-        </div>
-        <div class="content-row" id="popular-movies">
-            </div>
-        <div class="loading" id="movies-loading">
-            <div class="spinner"></div>
-        </div>
-    </section>
-
-    <section class="content-section">
-        <div class="section-header">
-            <h2 class="section-title">Diziler</h2>
-            <div class="scroll-buttons">
-                <button class="scroll-btn scroll-btn-all" onclick="goToSeries()">hepsini gör</button>
-                <button class="scroll-btn scroll-left" data-target="popular-series"><i class="fas fa-chevron-left"></i></button>
-                <button class="scroll-btn scroll-right" data-target="popular-series"><i class="fas fa-chevron-right"></i></button>
-            </div>
-        </div>
-        <div class="content-row" id="popular-series">
-            </div>
-        <div class="loading" id="series-loading">
-            <div class="spinner"></div>
-        </div>
-    </section>
-
-    <section class="content-section">
-        <div class="section-header">
-            <h2 class="section-title">Belgeseller</h2>
-            <div class="scroll-buttons">
-                <button class="scroll-btn scroll-btn-all" onclick="goToDocumentaries()">hepsini gör</button>
-                <button class="scroll-btn scroll-left" data-target="documentary-channels"><i class="fas fa-chevron-left"></i></button>
-                <button class="scroll-btn scroll-right" data-target="documentary-channels"><i class="fas fa-chevron-right"></i></button>
-            </div>
-        </div>
-        <div class="content-row" id="documentary-channels">
-            </div>
-        <div class="loading" id="documentary-loading">
-            <div class="spinner"></div>
-        </div>
-    </section>
-
-    <section class="content-section">
-        <div class="section-header">
-            <h2 class="section-title">Canlı TV</h2>
-            <div class="scroll-buttons">
-                <button class="scroll-btn scroll-btn-all" onclick="goToLiveTV()">hepsini gör</button>
-                <button class="scroll-btn scroll-left" data-target="live-channels"><i class="fas fa-chevron-left"></i></button>
-                <button class="scroll-btn scroll-right" data-target="live-channels"><i class="fas fa-chevron-right"></i></button>
-            </div>
-        </div>
-        <div class="content-row tv-channels-row" id="live-channels">
-            </div>
-        <div class="loading" id="live-loading">
-            <div class="spinner"></div>
-        </div>
-    </section>
-
-    <script src="js/navigation.js"></script>
-    <script src="js/m3u-loader.js"></script>
-    <script src="js/menu.js"></script>
-    <script src="js/scroll.js"></script>
-    <script src="js/redict.js"></script>
-    <script src="js/recently.js"></script>
+<script src="js/player.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
