@@ -1,0 +1,130 @@
+/* IPTV - tek stil dosyası (style.css + player.css yerine) */
+:root{
+  --bg:#0a0c10; --panel:#141821; --line:#232935;
+  --fg:#f2f4f8; --dim:#98a2b3; --accent:#e50914;
+  --r:10px; --pad:4vw; --hdr:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;background:var(--bg)}
+body{
+  font:400 1rem/1.4 "Segoe UI",Roboto,Arial,sans-serif;
+  color:var(--fg);background:var(--bg);
+  -webkit-tap-highlight-color:transparent;overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+img{display:block}
+::-webkit-scrollbar{width:0;height:0}
+
+/* ---------- odak (tek kural tüm bileşenler için) ---------- */
+.focusable{outline:0}
+.focusable:focus{outline:0}
+.card:focus,.tile:focus{transform:scale(1.07);z-index:5;box-shadow:0 0 0 3px var(--accent),0 18px 40px rgba(0,0,0,.75)}
+#nav a:focus,.logo:focus,.btn:focus,.p-btn:focus{background:var(--accent);color:#fff}
+.chip:focus{background:var(--accent);color:#fff}
+
+/* ---------- başlık ---------- */
+#hdr{
+  position:fixed;top:0;left:0;right:0;height:var(--hdr);z-index:40;
+  display:flex;align-items:center;padding:0 var(--pad);
+  background:linear-gradient(180deg,rgba(10,12,16,.98),rgba(10,12,16,0));
+  transition:background .2s;
+}
+#hdr.solid{background:var(--bg);border-bottom:1px solid var(--line)}
+.logo{font-weight:800;letter-spacing:.14em;color:var(--accent);font-size:1.35rem;padding:.35em .5em;border-radius:var(--r)}
+#nav{display:flex;margin-left:auto}
+#nav a{padding:.5em .9em;margin-left:.2em;border-radius:var(--r);color:var(--dim);font-size:.95rem}
+#nav a.on{color:var(--fg);font-weight:700}
+
+/* ---------- sayfa ---------- */
+#view{padding:calc(var(--hdr) + 1rem) var(--pad) 4rem}
+h1{font-size:1.6rem;font-weight:800;margin:.2em 0 .1em}
+.sub{color:var(--dim);margin-bottom:1.4rem;font-size:.95rem}
+.row-head{display:flex;align-items:baseline;margin:2rem 0 .8rem}
+.row-head h2{font-size:1.15rem;font-weight:700}
+.row-head a{margin-left:auto;color:var(--dim);font-size:.85rem;padding:.3em .6em;border-radius:var(--r)}
+.empty{color:var(--dim);padding:2rem 0}
+
+/* ---------- kısayollar ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));grid-gap:1rem;gap:1rem;margin:1.2rem 0 .5rem}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:1.4rem 1rem;text-align:center;font-weight:600;transition:transform .15s,box-shadow .15s}
+.tile span{display:block;font-size:1.7rem;margin-bottom:.35rem}
+
+/* ---------- içerik listeleri ---------- */
+.row{display:flex;overflow-x:auto;padding:14px 0;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.row .card{flex:0 0 auto;width:150px;margin-right:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));grid-gap:22px 14px;gap:22px 14px;padding:14px 0}
+
+.card{border-radius:var(--r);transition:transform .15s,box-shadow .15s;background:transparent}
+.thumb{position:relative;padding-top:150%;border-radius:var(--r);overflow:hidden;background:var(--panel) center/cover no-repeat}
+.card.wide .thumb{padding-top:60%;background-size:contain;background-color:#11151d}
+.thumb .ph{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-size:1.6rem;color:#39414f}
+.cap{padding:.5rem .1rem 0}
+.cap b{display:block;font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cap i{display:block;font-style:normal;font-size:.72rem;color:var(--dim);margin-top:.15rem}
+
+/* ---------- arama ---------- */
+.search{display:flex;margin:1rem 0 .5rem;max-width:640px}
+.search input{flex:1;background:var(--panel);border:2px solid var(--line);border-radius:var(--r);color:var(--fg);padding:.85em 1em;font-size:1rem}
+.search input:focus{border-color:var(--accent);outline:0}
+.chips{display:flex;flex-wrap:wrap;margin:.8rem 0}
+.chip{background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:.4em 1em;margin:0 .5rem .5rem 0;font-size:.85rem;color:var(--dim)}
+.chip.on{color:var(--fg);border-color:var(--accent)}
+
+.btn{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:.7em 1.4em;margin-right:.6rem;font-weight:600}
+
+/* ---------- yükleniyor ---------- */
+.spin{width:36px;height:36px;border:3px solid rgba(255,255,255,.18);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite;margin:2rem auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---------- oynatıcı ---------- */
+.player{position:fixed;inset:0;top:0;left:0;right:0;bottom:0;background:#000;z-index:100}
+.player[hidden]{display:none}
+#video{width:100%;height:100%;background:#000;object-fit:contain}
+.player.idle{cursor:none}
+.player.idle .p-top,.player.idle .p-bottom{opacity:0;pointer-events:none}
+.p-top,.p-bottom{position:absolute;left:0;right:0;padding:1.2rem var(--pad);transition:opacity .25s;z-index:2}
+.p-top{top:0;display:flex;align-items:center;background:linear-gradient(180deg,rgba(0,0,0,.85),transparent)}
+.p-top span{margin-left:1rem;font-size:1.05rem;font-weight:600}
+.live-badge{background:var(--accent);border-radius:4px;padding:.15em .6em;font-size:.7rem;letter-spacing:.1em}
+.p-bottom{bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.9),transparent)}
+.p-center{position:absolute;inset:0;left:0;top:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.p-center .spin{margin:0}
+.p-center .spin[hidden]{display:none}
+.bar{height:6px;background:rgba(255,255,255,.25);border-radius:3px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--accent)}
+.p-row{display:flex;align-items:center;margin-top:.9rem}
+.p-btn{width:2.6em;height:2.6em;border-radius:50%;font-size:1rem;line-height:1;margin-right:.5rem;background:rgba(255,255,255,.12)}
+.p-btn.big{font-size:1.3rem}
+.p-time{color:var(--dim);font-size:.85rem;margin-left:.6rem}
+#pFull{margin-left:auto;margin-right:0}
+.p-error{position:absolute;inset:0;left:0;top:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,.9);z-index:3;text-align:center;padding:2rem}
+.p-error[hidden]{display:none}
+.p-error p{margin-bottom:1.4rem;color:var(--dim)}
+
+/* ---------- bildirim ---------- */
+.toast{position:fixed;left:50%;bottom:8%;transform:translateX(-50%);background:rgba(0,0,0,.85);border:1px solid var(--line);border-radius:var(--r);padding:.8em 1.4em;z-index:200}
+.toast[hidden]{display:none}
+
+/* ---------- TV modu: 10 feet arayüz ---------- */
+body.tv{cursor:none;user-select:none;-webkit-user-select:none}
+body.tv #view{padding-bottom:6rem}
+body.tv .row{scroll-behavior:auto}
+@media (min-width:1500px){
+  html{font-size:19px}
+  :root{--hdr:88px;--pad:3.5vw}
+  .row .card,.grid{}
+  .row .card{width:210px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+}
+@media (max-width:600px){
+  :root{--pad:5vw}
+  #nav a{padding:.5em .55em;font-size:.85rem}
+  .row .card{width:120px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation-duration:.01ms!important}
+  .row{scroll-behavior:auto}
+}
